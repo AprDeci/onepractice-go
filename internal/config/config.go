@@ -30,7 +30,7 @@ func Load() Config {
 			Port: getenv("SERVER_PORT", "8080"),
 		},
 		Database: DatabaseConfig{
-			DSN: os.Getenv("MYSQL_DSN"),
+			DSN: getenv("MYSQL_DSN", "root:Luchen1122@tcp(fn.aprdec.top)/onepractice?charset=utf8&parseTime=True&loc=Local"),
 		},
 		Auth: AuthConfig{
 			TokenName: getenv("SA_TOKEN_NAME", "Authorization"),
