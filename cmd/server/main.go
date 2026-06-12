@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"onepractice-golang/internal/auth"
+	"onepractice-golang/internal/cache"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/db"
 	"onepractice-golang/internal/router"
@@ -20,15 +21,20 @@ import (
 func main() {
 	cfg := config.Load()
 
-	auth.Init(cfg.Auth)
-
 	database, err := db.Open(cfg.Database)
 	if err != nil {
 		slog.Error("open database", "error", err)
 		os.Exit(1)
 	}
 
-	app := router.New(cfg, database)
+	redisClient, err := cache.Open(cfg.Redis)
+	if err != nil {
+		slog.Error("open redis", "error", err)
+		os.Exit(1)
+	}
+	auth.Init(cfg.Auth, redisClient)
+
+	app := router.New(cfg, database, redisClient)
 
 	if err := app.Run(":" + cfg.Server.Port); err != nil {
 		slog.Error("run server", "error", err)

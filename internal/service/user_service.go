@@ -140,6 +140,22 @@ func (s *UserService) ResetPassword(req dto.ResetPasswordRequest) error {
 	}
 
 	email := normalizeEmail(req.Email)
+	if s.captcha != nil && s.captcha.UsesRedis() {
+		if err := s.captcha.ConsumeResetToken(email, req.ResetToken); err != nil {
+			return err
+		}
+
+		passwordHash, err := utils.HashPassword(req.Password)
+		if err != nil {
+			return err
+		}
+		encEmail, err := utils.LegacyAESEncrypt(email)
+		if err != nil {
+			return err
+		}
+		return s.db.Model(&model.User{}).Where("email in ?", []string{email, encEmail}).Update("password", passwordHash).Error
+	}
+
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		var token model.PasswordResetToken
 		if err := tx.Where("email = ? and token = ? and consumed_at is null", email, req.ResetToken).

@@ -8,6 +8,7 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	Redis    RedisConfig
 	Auth     AuthConfig
 	Mail     MailConfig
 }
@@ -18,6 +19,14 @@ type ServerConfig struct {
 
 type DatabaseConfig struct {
 	DSN string
+}
+
+type RedisConfig struct {
+	Addr     string
+	Username string
+	Password string
+	DB       int
+	Disabled bool
 }
 
 type AuthConfig struct {
@@ -42,6 +51,13 @@ func Load() Config {
 		},
 		Database: DatabaseConfig{
 			DSN: getenv("MYSQL_DSN", "root:Luchen1122@tcp(fn.aprdec.top)/onepractice?charset=utf8&parseTime=True&loc=Local"),
+		},
+		Redis: RedisConfig{
+			Addr:     getenv("REDIS_ADDR", "fn.aprdec.top:6379"),
+			Username: os.Getenv("REDIS_USERNAME"),
+			Password: os.Getenv("REDIS_PASSWORD"),
+			DB:       int(getenvInt64("REDIS_DB", 0)),
+			Disabled: getenv("REDIS_DISABLED", "false") == "true",
 		},
 		Auth: AuthConfig{
 			TokenName: getenv("SA_TOKEN_NAME", "Authorization"),

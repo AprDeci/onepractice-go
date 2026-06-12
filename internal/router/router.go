@@ -8,11 +8,12 @@ import (
 
 	"github.com/PeterTakahashi/gin-openapi/openapiui"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	sagin "github.com/sa-tokens/sa-token-go/integrations/gin"
 	"gorm.io/gorm"
 )
 
-func New(cfg config.Config, database *gorm.DB) *gin.Engine {
+func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger(), middleware.Recovery())
 
@@ -23,7 +24,7 @@ func New(cfg config.Config, database *gorm.DB) *gin.Engine {
 	api := r.Group("/api")
 	api.Use(plugin.TokenInterceptor())
 
-	captchaService := service.NewCaptchaService(database, cfg.Mail)
+	captchaService := service.NewCaptchaService(database, cfg.Mail, redisClient)
 	userHandler := handler.NewUserHandler(service.NewUserService(database, captchaService))
 	users := api.Group("/user")
 	users.POST("/register", userHandler.Register)
