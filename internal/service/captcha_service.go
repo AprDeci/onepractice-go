@@ -33,8 +33,8 @@ func NewCaptchaService(db *gorm.DB, mailCfg config.MailConfig, redisClient *redi
 }
 
 func (s *CaptchaService) SendEmailCaptcha(email string) error {
-	if s.db == nil && s.redis == nil {
-		return ErrDatabaseDisabled
+	if s.redis == nil {
+		return ErrRedisDisabled
 	}
 
 	email = normalizeEmail(email)
@@ -66,6 +66,9 @@ func (s *CaptchaService) VerifyResetPassword(email, code string) (string, error)
 	if s.db == nil {
 		return "", ErrDatabaseDisabled
 	}
+	if s.redis == nil {
+		return "", ErrRedisDisabled
+	}
 
 	email = normalizeEmail(email)
 	if exists, err := s.emailExists(email); err != nil {
@@ -87,7 +90,7 @@ func (s *CaptchaService) VerifyResetPassword(email, code string) (string, error)
 
 func (s *CaptchaService) ConsumeResetToken(email, token string) error {
 	if s.redis == nil {
-		return nil
+		return ErrRedisDisabled
 	}
 	if email == "" || token == "" {
 		return ErrInvalidParam
@@ -101,96 +104,51 @@ func (s *CaptchaService) ConsumeResetToken(email, token string) error {
 	}
 	return s.redis.Del(ctx, key).Err()
 }
-
-func (s *CaptchaService) UsesRedis() bool {
-	return s.redis != nil
-}
-
 func (s *CaptchaService) consumeCode(email, code, purpose string) error {
-	if s.db == nil && s.redis == nil {
-		return ErrDatabaseDisabled
+	if s.redis == nil {
+		return ErrRedisDisabled
 	}
 	if email == "" || code == "" {
 		return ErrInvalidParam
 	}
-	if s.redis != nil {
-		ctx := context.Background()
-		key := captchaCodeKey(email, purpose)
-		storedCode, err := s.redis.Get(ctx, key).Result()
-		if err != nil || storedCode != code {
-			return ErrCaptchaInvalid
-		}
-		return s.redis.Del(ctx, key).Err()
-	}
 
-	return s.db.Transaction(func(tx *gorm.DB) error {
-		var record model.EmailCode
-		err := tx.Where("email = ? and purpose = ? and consumed_at is null", email, purpose).
-			Order("created_at desc").
-			First(&record).Error
-		if err != nil {
-			return ErrCaptchaInvalid
-		}
-		if time.Now().After(record.ExpiresAt) || record.Code != code {
-			return ErrCaptchaInvalid
-		}
-		now := time.Now()
-		return tx.Model(&record).Update("consumed_at", &now).Error
-	})
+	ctx := context.Background()
+	key := captchaCodeKey(email, purpose)
+	storedCode, err := s.redis.Get(ctx, key).Result()
+	if err != nil || storedCode != code {
+		return ErrCaptchaInvalid
+	}
+	return s.redis.Del(ctx, key).Err()
 }
 
 func (s *CaptchaService) checkSendCooldown(email string) error {
-	if s.redis != nil {
-		ctx := context.Background()
-		ok, err := s.redis.SetNX(ctx, captchaCooldownKey(email), "1", 60*time.Second).Result()
-		if err != nil {
-			return err
-		}
-		if !ok {
-			return ErrEmailSendWait
-		}
-		return nil
+	if s.redis == nil {
+		return ErrRedisDisabled
 	}
 
-	var recent int64
-	if err := s.db.Model(&model.EmailCode{}).
-		Where("email = ? and created_at > ?", email, time.Now().Add(-60*time.Second)).
-		Count(&recent).Error; err != nil {
+	ctx := context.Background()
+	ok, err := s.redis.SetNX(ctx, captchaCooldownKey(email), "1", 60*time.Second).Result()
+	if err != nil {
 		return err
 	}
-	if recent > 0 {
+	if !ok {
 		return ErrEmailSendWait
 	}
 	return nil
 }
 
 func (s *CaptchaService) storeCode(email, code, purpose string) error {
-	if s.redis != nil {
-		return s.redis.Set(context.Background(), captchaCodeKey(email, purpose), code, 5*time.Minute).Err()
+	if s.redis == nil {
+		return ErrRedisDisabled
 	}
-
-	record := model.EmailCode{
-		Email:     email,
-		Code:      code,
-		Purpose:   purpose,
-		ExpiresAt: time.Now().Add(5 * time.Minute),
-		CreatedAt: time.Now(),
-	}
-	return s.db.Create(&record).Error
+	return s.redis.Set(context.Background(), captchaCodeKey(email, purpose), code, 5*time.Minute).Err()
 }
 
 func (s *CaptchaService) storeResetToken(email, token string) error {
-	if s.redis != nil {
-		return s.redis.Set(context.Background(), resetTokenKey(email, token), email, 5*time.Minute).Err()
+	if s.redis == nil {
+		return ErrRedisDisabled
 	}
-
-	record := model.PasswordResetToken{
-		Email:     email,
-		Token:     token,
-		ExpiresAt: time.Now().Add(5 * time.Minute),
-		CreatedAt: time.Now(),
-	}
-	return s.db.Create(&record).Error
+	return s.redis.Set(context.Background(), resetTokenKey(email, token), email, 5*time.Minute).Err()
 }
 
 func captchaCodeKey(email, purpose string) string {

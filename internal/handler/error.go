@@ -27,6 +27,8 @@ func writeError(c *gin.Context, err error) {
 		response.ErrorEnum(c, response.ErrParamInvalid)
 	case errors.Is(err, service.ErrDatabaseDisabled):
 		response.Error(c, 500, err.Error())
+	case errors.Is(err, service.ErrRedisDisabled):
+		response.Error(c, 500, err.Error())
 	default:
 		response.Error(c, response.ErrOperateError.Code, err.Error())
 	}
