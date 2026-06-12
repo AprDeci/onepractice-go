@@ -1,4 +1,435 @@
+basePath: /
+definitions:
+  dto.EmailCaptchaRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  dto.LoginRequest:
+    properties:
+      password:
+        type: string
+      recaptchaToken:
+        type: string
+      usernameorEmail:
+        type: string
+    required:
+    - password
+    - usernameorEmail
+    type: object
+  dto.PaperQueryRequest:
+    properties:
+      page:
+        minimum: 1
+        type: integer
+      size:
+        maximum: 100
+        minimum: 1
+        type: integer
+      type:
+        type: string
+      year:
+        type: integer
+    required:
+    - page
+    - size
+    type: object
+  dto.RegisterRequest:
+    properties:
+      captchacode:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      recaptchaToken:
+        type: string
+      username:
+        maxLength: 20
+        minLength: 3
+        type: string
+      usertype:
+        type: integer
+    required:
+    - captchacode
+    - email
+    - password
+    - username
+    type: object
+  dto.ResetPasswordRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      resetToken:
+        type: string
+    required:
+    - email
+    - password
+    - resetToken
+    type: object
+  response.Body:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
 info:
   contact: {}
-paths: {}
+  description: Onepractice 在线英语真题平台 Go 后端 API。
+  title: Onepractice API
+  version: 0.1.0
+paths:
+  /api/captcha/email:
+    get:
+      description: 向指定邮箱发送验证码。
+      parameters:
+      - description: 邮箱
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 发送邮箱验证码
+      tags:
+      - captcha
+  /api/captcha/email/verify:
+    post:
+      consumes:
+      - application/json
+      description: 校验邮箱验证码，成功后返回重置密码凭证。
+      parameters:
+      - description: 邮箱验证码参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.EmailCaptchaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 校验邮箱验证码
+      tags:
+      - captcha
+  /api/paper/all:
+    get:
+      description: 返回全部试卷列表。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 获取全部试卷
+      tags:
+      - paper
+  /api/paper/getPaperandRatingWithQuerys:
+    post:
+      consumes:
+      - application/json
+      description: 按试卷类型和年份分页查询试卷，同时返回评分和题目数量。
+      parameters:
+      - description: 查询条件
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PaperQueryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 分页查询试卷和评分
+      tags:
+      - paper
+  /api/paper/getPaperwithQuerys:
+    post:
+      consumes:
+      - application/json
+      description: 按试卷类型和年份分页查询试卷。
+      parameters:
+      - description: 查询条件
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PaperQueryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 分页查询试卷
+      tags:
+      - paper
+  /api/paper/intro:
+    get:
+      description: 根据试卷 ID 返回试卷简介、分区数量和各分区题目数量。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 获取试卷简介
+      tags:
+      - paper
+  /api/paper/type:
+    get:
+      description: 根据试卷类型查询试卷列表。
+      parameters:
+      - description: 试卷类型，如 CET-4/CET-6
+        in: query
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 按类型查询试卷
+      tags:
+      - paper
+  /api/paper/types:
+    get:
+      description: 返回数据库中存在的全部试卷类型。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 获取全部试卷类型
+      tags:
+      - paper
+  /api/question/getAllByIdSplitByPart:
+    get:
+      description: 返回指定试卷题目，并按 partName 分组。Part II 内按 questionOrder 排序。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 按 Part 分组获取题目
+      tags:
+      - question
+  /api/question/getAnswersByPaperId:
+    get:
+      description: 返回指定试卷的全部答案，并按答案序号排序。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 获取试卷答案
+      tags:
+      - question
+  /api/question/getById:
+    get:
+      description: 返回指定试卷下的全部题目。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 按试卷 ID 获取题目
+      tags:
+      - question
+  /api/question/getByType:
+    get:
+      description: 返回指定试卷下指定题型的题目。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      - description: 题型
+        in: query
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 按试卷 ID 和题型获取题目
+      tags:
+      - question
+  /api/user/info:
+    get:
+      description: 根据 token 获取当前登录用户信息。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - user
+  /api/user/login:
+    post:
+      consumes:
+      - application/json
+      description: 使用用户名或邮箱登录，成功后返回 sa-token-go token。兼容旧 AES 密码，成功后升级为 bcrypt。
+      parameters:
+      - description: 登录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 用户登录
+      tags:
+      - user
+  /api/user/logout:
+    post:
+      description: 使当前 token 失效。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 用户登出
+      tags:
+      - user
+  /api/user/register:
+    post:
+      consumes:
+      - application/json
+      description: 使用用户名、密码、邮箱和邮箱验证码注册用户。
+      parameters:
+      - description: 注册参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 用户注册
+      tags:
+      - user
+  /api/user/resetpassword:
+    post:
+      consumes:
+      - application/json
+      description: 使用邮箱和重置凭证重置密码。
+      parameters:
+      - description: 重置密码参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 重置密码
+      tags:
+      - user
+  /health:
+    get:
+      description: 返回服务状态和数据库是否启用。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 健康检查
+      tags:
+      - health
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

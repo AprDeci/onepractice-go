@@ -18,6 +18,14 @@ func NewQuestionHandler(service *service.QuestionService) *QuestionHandler {
 	return &QuestionHandler{service: service}
 }
 
+// ByPaperID 按试卷 ID 获取题目。
+// @Summary 按试卷 ID 获取题目
+// @Description 返回指定试卷下的全部题目。
+// @Tags question
+// @Produce json
+// @Param id query int true "试卷 ID"
+// @Success 200 {object} response.Body
+// @Router /api/question/getById [get]
 func (h *QuestionHandler) ByPaperID(c *gin.Context) {
 	id, ok := queryInt(c, "id")
 	if !ok {
@@ -32,6 +40,15 @@ func (h *QuestionHandler) ByPaperID(c *gin.Context) {
 	response.Success(c, questions)
 }
 
+// ByPaperIDAndType 按试卷 ID 和题型获取题目。
+// @Summary 按试卷 ID 和题型获取题目
+// @Description 返回指定试卷下指定题型的题目。
+// @Tags question
+// @Produce json
+// @Param id query int true "试卷 ID"
+// @Param type query string true "题型"
+// @Success 200 {object} response.Body
+// @Router /api/question/getByType [get]
 func (h *QuestionHandler) ByPaperIDAndType(c *gin.Context) {
 	id, ok := queryInt(c, "id")
 	if !ok {
@@ -46,6 +63,14 @@ func (h *QuestionHandler) ByPaperIDAndType(c *gin.Context) {
 	response.Success(c, questions)
 }
 
+// SplitByPart 按 Part 分组获取题目。
+// @Summary 按 Part 分组获取题目
+// @Description 返回指定试卷题目，并按 partName 分组。Part II 内按 questionOrder 排序。
+// @Tags question
+// @Produce json
+// @Param id query int true "试卷 ID"
+// @Success 200 {object} response.Body
+// @Router /api/question/getAllByIdSplitByPart [get]
 func (h *QuestionHandler) SplitByPart(c *gin.Context) {
 	id, ok := queryInt(c, "id")
 	if !ok {
@@ -60,6 +85,14 @@ func (h *QuestionHandler) SplitByPart(c *gin.Context) {
 	response.Success(c, questions)
 }
 
+// Answers 获取试卷答案。
+// @Summary 获取试卷答案
+// @Description 返回指定试卷的全部答案，并按答案序号排序。
+// @Tags question
+// @Produce json
+// @Param id query int true "试卷 ID"
+// @Success 200 {object} response.Body
+// @Router /api/question/getAnswersByPaperId [get]
 func (h *QuestionHandler) Answers(c *gin.Context) {
 	id, ok := queryInt(c, "id")
 	if !ok {

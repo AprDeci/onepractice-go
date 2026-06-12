@@ -9,6 +9,7 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	Auth     AuthConfig
+	Mail     MailConfig
 }
 
 type ServerConfig struct {
@@ -24,6 +25,16 @@ type AuthConfig struct {
 	Timeout   int64
 }
 
+type MailConfig struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+	From     string
+	Name     string
+	Disabled bool
+}
+
 func Load() Config {
 	return Config{
 		Server: ServerConfig{
@@ -35,6 +46,15 @@ func Load() Config {
 		Auth: AuthConfig{
 			TokenName: getenv("SA_TOKEN_NAME", "Authorization"),
 			Timeout:   getenvInt64("SA_TOKEN_TIMEOUT", 15*24*60*60),
+		},
+		Mail: MailConfig{
+			Host:     os.Getenv("SMTP_HOST"),
+			Port:     int(getenvInt64("SMTP_PORT", 465)),
+			Username: os.Getenv("SMTP_USERNAME"),
+			Password: os.Getenv("SMTP_PASSWORD"),
+			From:     getenv("SMTP_FROM", os.Getenv("SMTP_USERNAME")),
+			Name:     getenv("SMTP_NAME", "onepractice"),
+			Disabled: getenv("SMTP_DISABLED", "true") == "true",
 		},
 	}
 }

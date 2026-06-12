@@ -6,12 +6,13 @@ import (
 	"onepractice-golang/internal/middleware"
 	"onepractice-golang/internal/service"
 
+	"github.com/PeterTakahashi/gin-openapi/openapiui"
 	"github.com/gin-gonic/gin"
 	sagin "github.com/sa-tokens/sa-token-go/integrations/gin"
 	"gorm.io/gorm"
 )
 
-func New(_ config.Config, database *gorm.DB) *gin.Engine {
+func New(cfg config.Config, database *gorm.DB) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger(), middleware.Recovery())
 
@@ -21,6 +22,18 @@ func New(_ config.Config, database *gorm.DB) *gin.Engine {
 	plugin := sagin.NewPlugin(sagin.GetManager())
 	api := r.Group("/api")
 	api.Use(plugin.TokenInterceptor())
+
+	captchaService := service.NewCaptchaService(database, cfg.Mail)
+	userHandler := handler.NewUserHandler(service.NewUserService(database, captchaService))
+	users := api.Group("/user")
+	users.POST("/register", userHandler.Register)
+	users.POST("/login", userHandler.Login)
+	users.POST("/resetpassword", userHandler.ResetPassword)
+
+	captchaHandler := handler.NewCaptchaHandler(captchaService)
+	captcha := api.Group("/captcha")
+	captcha.GET("/email", captchaHandler.Email)
+	captcha.POST("/email/verify", captchaHandler.VerifyEmail)
 
 	paperHandler := handler.NewPaperHandler(service.NewPaperService(database))
 	papers := api.Group("/paper")
@@ -40,6 +53,8 @@ func New(_ config.Config, database *gorm.DB) *gin.Engine {
 
 	protected := api.Group("")
 	protected.Use(plugin.AuthMiddleware())
+	protected.GET("/user/info", userHandler.Info)
+	protected.POST("/user/logout", userHandler.Logout)
 	protected.GET("/auth/check", health.Check)
 	// OpenAPI
 	r.GET("/openapi/*any", openapiui.WrapHandler(openapiui.Config{
