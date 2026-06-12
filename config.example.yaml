@@ -1,0 +1,25 @@
+server:
+  port: "8080"
+
+database:
+  dsn: "root:password@tcp(localhost:3306)/onepractice?charset=utf8&parseTime=True&loc=Local"
+
+redis:
+  addr: ""
+  username: ""
+  password: ""
+  db: 0
+  disabled: false
+
+auth:
+  token_name: "Authorization"
+  timeout: 1296000
+
+mail:
+  host: ""
+  port: 465
+  username: ""
+  password: ""
+  from: ""
+  name: "onepractice"
+  disabled: true
