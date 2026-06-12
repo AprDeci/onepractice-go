@@ -41,6 +41,13 @@ func New(_ config.Config, database *gorm.DB) *gin.Engine {
 	protected := api.Group("")
 	protected.Use(plugin.AuthMiddleware())
 	protected.GET("/auth/check", health.Check)
+	// OpenAPI
+	r.GET("/openapi/*any", openapiui.WrapHandler(openapiui.Config{
+		SpecURL:      "/openapi/openapi.json",
+		SpecFilePath: "./openapi/swagger.json",
+		Title:        "Example API",
+		Theme:        "light", // or "dark"
+	}))
 
 	return r
 }
