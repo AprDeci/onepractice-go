@@ -2,6 +2,7 @@ package service
 
 import (
 	"sort"
+	"strconv"
 
 	"onepractice-golang/internal/dto"
 	"onepractice-golang/internal/model"
@@ -43,7 +44,9 @@ func (s *QuestionService) SplitByPart(paperID int) (dto.ExamQuestion, error) {
 	}
 
 	var questions []model.Question
-	err := s.db.Where("paper_id = ?", paperID).Order("part_name asc").Find(&questions).Error
+	err := s.db.Where("paper_id = ?", paperID).
+		Order("part_name asc, section_name asc, question_order asc").
+		Find(&questions).Error
 	if err != nil {
 		return dto.ExamQuestion{}, err
 	}
@@ -58,12 +61,6 @@ func (s *QuestionService) SplitByPart(paperID int) (dto.ExamQuestion, error) {
 			parts = append(parts, dto.QuestionPart{})
 		}
 		parts[idx].Questions = append(parts[idx].Questions, question)
-	}
-
-	if idx, ok := partIndex["Part II"]; ok {
-		sort.Slice(parts[idx].Questions, func(i, j int) bool {
-			return parts[idx].Questions[i].QuestionOrder < parts[idx].Questions[j].QuestionOrder
-		})
 	}
 
 	return dto.ExamQuestion{PaperID: paperID, QuestionParts: parts}, nil
@@ -85,6 +82,11 @@ func (s *QuestionService) Answers(paperID int) (dto.AnswersResponse, error) {
 		answers = append(answers, question.CorrectAnswer...)
 	}
 	sort.Slice(answers, func(i, j int) bool {
+		left, leftErr := strconv.Atoi(answers[i].Index)
+		right, rightErr := strconv.Atoi(answers[j].Index)
+		if leftErr == nil && rightErr == nil {
+			return left < right
+		}
 		return answers[i].Index < answers[j].Index
 	})
 

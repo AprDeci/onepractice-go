@@ -7,7 +7,7 @@ import (
 )
 
 type Answer struct {
-	Index  int    `json:"index"`
+	Index  string `json:"index"`
 	Answer string `json:"answer"`
 }
 
