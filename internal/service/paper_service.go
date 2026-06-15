@@ -55,19 +55,21 @@ func (s *PaperService) PageWithRating(query dto.PaperQueryRequest) (dto.PageResu
 		return dto.PageResult[dto.PaperWithRating]{}, ErrDatabaseDisabled
 	}
 
-	base := s.paperFilter(s.db.Table("papers p"), query).
-		Joins("left join paper_rate_mapping r on r.paperId = p.paper_id").
-		Joins("left join questions q on q.paper_id = p.paper_id").
-		Group("p.paper_id, p.paper_name, p.exam_year, p.exam_month, p.version, p.total_time, p.type, r.rating, r.number").
-		Having("count(q.question_id) > 0")
+	buildQuery := func() *gorm.DB {
+		return s.paperFilter(s.db.Table("papers p"), query).
+			Joins("left join paper_rate_mapping r on r.paperId = p.paper_id").
+			Joins("left join questions q on q.paper_id = p.paper_id").
+			Group("p.paper_id, p.paper_name, p.exam_year, p.exam_month, p.version, p.total_time, p.type, r.rating, r.number").
+			Having("count(q.question_id) > 0")
+	}
 
 	var totalRows []struct{ PaperID int }
-	if err := base.Select("p.paper_id").Scan(&totalRows).Error; err != nil {
+	if err := buildQuery().Select("p.paper_id").Scan(&totalRows).Error; err != nil {
 		return dto.PageResult[dto.PaperWithRating]{}, err
 	}
 
 	var papers []dto.PaperWithRating
-	err := base.Select(`p.paper_id, p.paper_name, p.exam_year, p.exam_month, p.version, p.total_time, p.type,
+	err := buildQuery().Select(`p.paper_id, p.paper_name, p.exam_year, p.exam_month, p.version, p.total_time, p.type,
 		count(q.question_id) as question_count, coalesce(r.rating, 0) as rating, coalesce(r.number, 0) as number`).
 		Order("p.exam_year desc, p.exam_month desc, substring(p.type, 4, 1) desc").
 		Limit(query.Size).
