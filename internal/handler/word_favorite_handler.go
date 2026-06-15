@@ -113,6 +113,7 @@ func (h *WordFavoriteHandler) Check(c *gin.Context) {
 // @Tags word
 // @Produce json
 // @Security ApiKeyAuth
+// @Param keyword query string false "在单词拼写和释义中搜索"
 // @Param page query int false "页码，默认 1"
 // @Param page_size query int false "每页数量，默认 20，最大 100"
 // @Success 200 {object} response.Body

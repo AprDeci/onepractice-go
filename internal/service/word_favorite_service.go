@@ -77,6 +77,10 @@ func (s *WordFavoriteService) List(userID int64, req dto.WordFavoriteListRequest
 	query := s.db.Table("user_word_favorites as f").
 		Joins("inner join tb_vocabulary v on v.wordid = f.wordid").
 		Where("f.user_id = ?", userID)
+	if keyword := strings.TrimSpace(req.Keyword); keyword != "" {
+		like := "%" + keyword + "%"
+		query = query.Where("v.spelling like ? or v.paraphrase like ?", like, like)
+	}
 
 	var total int64
 	if err := query.Count(&total).Error; err != nil {

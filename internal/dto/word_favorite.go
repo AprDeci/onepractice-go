@@ -9,6 +9,7 @@ type WordFavoriteRequest struct {
 }
 
 type WordFavoriteListRequest struct {
+	Keyword string `form:"keyword" json:"keyword"`
 	PageQuery
 }
 
