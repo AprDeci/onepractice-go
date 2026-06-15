@@ -5,6 +5,7 @@ import (
 	"onepractice-golang/internal/handler"
 	"onepractice-golang/internal/middleware"
 	"onepractice-golang/internal/service"
+	"time"
 
 	"github.com/PeterTakahashi/gin-openapi/openapiui"
 	"github.com/gin-contrib/cors"
@@ -16,7 +17,14 @@ import (
 
 func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.Engine {
 	r := gin.New()
-	r.Use(cors.Default(), gin.Logger(), middleware.Recovery())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+	r.Use( gin.Logger(), middleware.Recovery())
 
 	health := handler.NewHealthHandler(database)
 	r.GET("/health", health.Check)
