@@ -39,6 +39,29 @@ definitions:
     - page
     - size
     type: object
+  dto.RecordRequest:
+    properties:
+      answers:
+        type: string
+      hasspendtime:
+        type: integer
+      isfinished:
+        type: integer
+      paperId:
+        type: integer
+      recordId:
+        type: string
+      score:
+        type: integer
+      timespend:
+        type: integer
+      totalscore:
+        type: integer
+      type:
+        type: string
+    required:
+    - paperId
+    type: object
   dto.RegisterRequest:
     properties:
       captchacode:
@@ -316,6 +339,82 @@ paths:
       summary: 按试卷 ID 和题型获取题目
       tags:
       - question
+  /api/record/list:
+    get:
+      description: 按最近天数分页获取当前登录用户的答题记录。
+      parameters:
+      - description: 最近天数
+        in: query
+        name: days
+        type: integer
+      - description: 页码
+        in: query
+        name: pageNum
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取答题记录列表
+      tags:
+      - record
+  /api/record/save:
+    post:
+      consumes:
+      - application/json
+      description: 为当前登录用户创建一条答题记录，返回 recordId。
+      parameters:
+      - description: 答题记录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 保存答题记录
+      tags:
+      - record
+  /api/record/update:
+    post:
+      consumes:
+      - application/json
+      description: 更新当前登录用户已有答题记录的作答结果。
+      parameters:
+      - description: 答题记录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新答题记录
+      tags:
+      - record
   /api/user/info:
     get:
       description: 根据 token 获取当前登录用户信息。

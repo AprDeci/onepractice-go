@@ -360,6 +360,129 @@
                 }
             }
         },
+        "/api/record/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "按最近天数分页获取当前登录用户的答题记录。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "获取答题记录列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "最近天数",
+                        "name": "days",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "pageNum",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/record/save": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "为当前登录用户创建一条答题记录，返回 recordId。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "保存答题记录",
+                "parameters": [
+                    {
+                        "description": "答题记录参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RecordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/record/update": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新当前登录用户已有答题记录的作答结果。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "更新答题记录",
+                "parameters": [
+                    {
+                        "description": "答题记录参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RecordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/info": {
             "get": {
                 "security": [
@@ -588,6 +711,41 @@
                 },
                 "year": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.RecordRequest": {
+            "type": "object",
+            "required": [
+                "paperId"
+            ],
+            "properties": {
+                "answers": {
+                    "type": "string"
+                },
+                "hasspendtime": {
+                    "type": "integer"
+                },
+                "isfinished": {
+                    "type": "integer"
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "recordId": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "timespend": {
+                    "type": "integer"
+                },
+                "totalscore": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },

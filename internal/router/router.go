@@ -52,11 +52,17 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 	questions.GET("/getAllByIdSplitByPart", questionHandler.SplitByPart)
 	questions.GET("/getAnswersByPaperId", questionHandler.Answers)
 
+	paperService := service.NewPaperService(database)
+	recordHandler := handler.NewRecordHandler(service.NewRecordService(redisClient, paperService))
+
 	protected := api.Group("")
 	protected.Use(plugin.AuthMiddleware())
 	protected.GET("/user/info", userHandler.Info)
 	protected.POST("/user/logout", userHandler.Logout)
 	protected.GET("/auth/check", health.Check)
+	protected.POST("/record/save", recordHandler.Save)
+	protected.GET("/record/list", recordHandler.List)
+	protected.POST("/record/update", recordHandler.Update)
 	// OpenAPI
 	r.GET("/openapi/*any", openapiui.WrapHandler(openapiui.Config{
 		SpecURL:      "/openapi/openapi.json",
