@@ -553,6 +553,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "purpose": {
+                    "type": "string"
                 }
             }
         },
@@ -564,9 +567,6 @@ const docTemplate = `{
             ],
             "properties": {
                 "password": {
-                    "type": "string"
-                },
-                "recaptchaToken": {
                     "type": "string"
                 },
                 "usernameorEmail": {
@@ -614,9 +614,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
-                },
-                "recaptchaToken": {
                     "type": "string"
                 },
                 "username": {

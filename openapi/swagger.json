@@ -546,6 +546,9 @@
                 },
                 "email": {
                     "type": "string"
+                },
+                "purpose": {
+                    "type": "string"
                 }
             }
         },
@@ -557,9 +560,6 @@
             ],
             "properties": {
                 "password": {
-                    "type": "string"
-                },
-                "recaptchaToken": {
                     "type": "string"
                 },
                 "usernameorEmail": {
@@ -607,9 +607,6 @@
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
-                },
-                "recaptchaToken": {
                     "type": "string"
                 },
                 "username": {

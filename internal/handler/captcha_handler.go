@@ -25,7 +25,7 @@ func NewCaptchaHandler(service *service.CaptchaService) *CaptchaHandler {
 // @Success 200 {object} response.Body
 // @Router /api/captcha/email [get]
 func (h *CaptchaHandler) Email(c *gin.Context) {
-	if err := h.service.SendEmailCaptcha(c.Query("email")); err != nil {
+	if err := h.service.SendEmailCaptcha(c.Query("email"), c.DefaultQuery("purpose", service.CaptchaPurposeRegister)); err != nil {
 		writeError(c, err)
 		return
 	}

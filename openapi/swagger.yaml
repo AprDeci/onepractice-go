@@ -6,6 +6,8 @@ definitions:
         type: string
       email:
         type: string
+      purpose:
+        type: string
     required:
     - code
     - email
@@ -13,8 +15,6 @@ definitions:
   dto.LoginRequest:
     properties:
       password:
-        type: string
-      recaptchaToken:
         type: string
       usernameorEmail:
         type: string
@@ -46,8 +46,6 @@ definitions:
       email:
         type: string
       password:
-        type: string
-      recaptchaToken:
         type: string
       username:
         maxLength: 20

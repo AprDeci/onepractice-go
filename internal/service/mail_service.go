@@ -29,7 +29,7 @@ func (s *MailService) Send(to, subject, body string) error {
 	client := sendflare.NewSendflare(s.cfg.APIKey)
 	resp, err := client.SendEmail(sendflare.SendEmailReq{
 		From:    s.cfg.From,
-		To:      to,		
+		To:      to,
 		Subject: subject,
 		Body:    body,
 	})

@@ -32,13 +32,14 @@ func NewCaptchaService(db *gorm.DB, mailCfg config.MailConfig, redisClient *redi
 	return &CaptchaService{db: db, mailer: NewMailService(mailCfg), redis: redisClient}
 }
 
-func (s *CaptchaService) SendEmailCaptcha(email string) error {
+func (s *CaptchaService) SendEmailCaptcha(email, purpose string) error {
 	if s.redis == nil {
 		return ErrRedisDisabled
 	}
 
 	email = normalizeEmail(email)
-	if email == "" {
+	purpose = normalizeCaptchaPurpose(purpose)
+	if email == "" || purpose == "" {
 		return ErrInvalidParam
 	}
 
@@ -55,7 +56,7 @@ func (s *CaptchaService) SendEmailCaptcha(email string) error {
 		return err
 	}
 
-	if err := s.storeCodeAndCooldown(email, code, CaptchaPurposeRegister); err != nil {
+	if err := s.storeCodeAndCooldown(email, code, purpose); err != nil {
 		return err
 	}
 
@@ -75,13 +76,14 @@ func (s *CaptchaService) VerifyResetPassword(email, code string) (string, error)
 	}
 
 	email = normalizeEmail(email)
+	purpose := normalizeCaptchaPurpose(CaptchaPurposeResetPassword)
 	if exists, err := s.emailExists(email); err != nil {
 		return "", err
 	} else if !exists {
 		return "", ErrInvalidParam
 	}
 
-	if err := s.consumeCode(email, code, CaptchaPurposeRegister); err != nil {
+	if err := s.consumeCode(email, code, purpose); err != nil {
 		return "", err
 	}
 
@@ -162,6 +164,17 @@ func (s *CaptchaService) storeCodeAndCooldown(email, code, purpose string) error
 
 func captchaCodeKey(email, purpose string) string {
 	return "onepractice:captcha:email:" + purpose + ":" + email
+}
+
+func normalizeCaptchaPurpose(purpose string) string {
+	switch strings.TrimSpace(purpose) {
+	case "", CaptchaPurposeRegister:
+		return CaptchaPurposeRegister
+	case CaptchaPurposeResetPassword:
+		return CaptchaPurposeResetPassword
+	default:
+		return ""
+	}
 }
 
 func captchaCooldownKey(email string) string {
