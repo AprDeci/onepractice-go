@@ -23,9 +23,9 @@ func NewDictionaryService(db *gorm.DB) *DictionaryService {
 	return &DictionaryService{db: db}
 }
 
-func (s *DictionaryService) ListWords(req dto.DictionaryWordListRequest) (dto.DictionaryPageResult[dto.DictionaryWordListItem], error) {
+func (s *DictionaryService) ListWords(req dto.DictionaryWordListRequest) (dto.PageListResult[dto.DictionaryWordListItem], error) {
 	if s.db == nil {
-		return dto.DictionaryPageResult[dto.DictionaryWordListItem]{}, ErrDatabaseDisabled
+		return dto.PageListResult[dto.DictionaryWordListItem]{}, ErrDatabaseDisabled
 	}
 
 	req.Normalize()
@@ -33,17 +33,17 @@ func (s *DictionaryService) ListWords(req dto.DictionaryWordListRequest) (dto.Di
 
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
-		return dto.DictionaryPageResult[dto.DictionaryWordListItem]{}, err
+		return dto.PageListResult[dto.DictionaryWordListItem]{}, err
 	}
 
 	var words []dto.DictionaryWordListItem
 	err := query.Select(dictionaryWordListSelect).
 		Order(dictionaryWordListOrder).
-		Offset(dictionaryOffset(req.Page, req.PageSize)).
+		Offset(req.Offset()).
 		Limit(req.PageSize).
 		Scan(&words).Error
 
-	return dto.DictionaryPageResult[dto.DictionaryWordListItem]{
+	return dto.PageListResult[dto.DictionaryWordListItem]{
 		List: words, Total: total, Page: req.Page, PageSize: req.PageSize,
 	}, err
 }
@@ -139,9 +139,9 @@ func (s *DictionaryService) GetWordDetail(wordID uint) (dto.DictionaryWordDetail
 	return result, nil
 }
 
-func (s *DictionaryService) ListBooks(req dto.DictionaryBookListRequest) (dto.DictionaryPageResult[dto.DictionaryBookListItem], error) {
+func (s *DictionaryService) ListBooks(req dto.DictionaryBookListRequest) (dto.PageListResult[dto.DictionaryBookListItem], error) {
 	if s.db == nil {
-		return dto.DictionaryPageResult[dto.DictionaryBookListItem]{}, ErrDatabaseDisabled
+		return dto.PageListResult[dto.DictionaryBookListItem]{}, ErrDatabaseDisabled
 	}
 
 	req.Normalize()
@@ -155,24 +155,24 @@ func (s *DictionaryService) ListBooks(req dto.DictionaryBookListRequest) (dto.Di
 
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
-		return dto.DictionaryPageResult[dto.DictionaryBookListItem]{}, err
+		return dto.PageListResult[dto.DictionaryBookListItem]{}, err
 	}
 
 	var books []dto.DictionaryBookListItem
 	err := query.Select("b.bookid, b.bookname, b.voccount, b.status").
 		Order("b.bookid asc").
-		Offset(dictionaryOffset(req.Page, req.PageSize)).
+		Offset(req.Offset()).
 		Limit(req.PageSize).
 		Scan(&books).Error
 
-	return dto.DictionaryPageResult[dto.DictionaryBookListItem]{
+	return dto.PageListResult[dto.DictionaryBookListItem]{
 		List: books, Total: total, Page: req.Page, PageSize: req.PageSize,
 	}, err
 }
 
-func (s *DictionaryService) ListBookWords(bookID uint, req dto.DictionaryBookWordsRequest) (dto.DictionaryPageResult[dto.DictionaryWordListItem], error) {
+func (s *DictionaryService) ListBookWords(bookID uint, req dto.DictionaryBookWordsRequest) (dto.PageListResult[dto.DictionaryWordListItem], error) {
 	if s.db == nil {
-		return dto.DictionaryPageResult[dto.DictionaryWordListItem]{}, ErrDatabaseDisabled
+		return dto.PageListResult[dto.DictionaryWordListItem]{}, ErrDatabaseDisabled
 	}
 
 	req.Normalize()
@@ -182,17 +182,17 @@ func (s *DictionaryService) ListBookWords(bookID uint, req dto.DictionaryBookWor
 
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
-		return dto.DictionaryPageResult[dto.DictionaryWordListItem]{}, err
+		return dto.PageListResult[dto.DictionaryWordListItem]{}, err
 	}
 
 	var words []dto.DictionaryWordListItem
 	err := query.Select(dictionaryWordListSelect).
 		Order(dictionaryWordListOrder).
-		Offset(dictionaryOffset(req.Page, req.PageSize)).
+		Offset(req.Offset()).
 		Limit(req.PageSize).
 		Scan(&words).Error
 
-	return dto.DictionaryPageResult[dto.DictionaryWordListItem]{
+	return dto.PageListResult[dto.DictionaryWordListItem]{
 		List: words, Total: total, Page: req.Page, PageSize: req.PageSize,
 	}, err
 }
@@ -226,8 +226,4 @@ func applyDictionaryKeywordFilter(query *gorm.DB, keyword string) *gorm.DB {
 		query = query.Where("v.spelling like ? or v.paraphrase like ?", like, like)
 	}
 	return query
-}
-
-func dictionaryOffset(page, size int) int {
-	return (page - 1) * size
 }

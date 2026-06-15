@@ -1,22 +1,5 @@
 package dto
 
-type DictionaryPageRequest struct {
-	Page     int `form:"page" json:"page"`
-	PageSize int `form:"page_size" json:"page_size"`
-}
-
-func (r *DictionaryPageRequest) Normalize() {
-	if r.Page <= 0 {
-		r.Page = 1
-	}
-	if r.PageSize <= 0 {
-		r.PageSize = 20
-	}
-	if r.PageSize > 100 {
-		r.PageSize = 100
-	}
-}
-
 type DictionaryWordListRequest struct {
 	Keyword      string   `form:"keyword" json:"keyword"`
 	Spelling     string   `form:"spelling" json:"spelling"`
@@ -24,30 +7,30 @@ type DictionaryWordListRequest struct {
 	BookID       *uint    `form:"bookid" json:"bookid"`
 	MinFrequency *float64 `form:"min_frequency" json:"min_frequency"`
 	MaxFrequency *float64 `form:"max_frequency" json:"max_frequency"`
-	DictionaryPageRequest
+	PageQuery
 }
 
 func (r *DictionaryWordListRequest) Normalize() {
-	r.DictionaryPageRequest.Normalize()
+	r.PageQuery.Normalize()
 }
 
 type DictionaryBookListRequest struct {
 	Keyword string `form:"keyword" json:"keyword"`
 	Status  *int   `form:"status" json:"status"`
-	DictionaryPageRequest
+	PageQuery
 }
 
 func (r *DictionaryBookListRequest) Normalize() {
-	r.DictionaryPageRequest.Normalize()
+	r.PageQuery.Normalize()
 }
 
 type DictionaryBookWordsRequest struct {
 	Keyword string `form:"keyword" json:"keyword"`
-	DictionaryPageRequest
+	PageQuery
 }
 
 func (r *DictionaryBookWordsRequest) Normalize() {
-	r.DictionaryPageRequest.Normalize()
+	r.PageQuery.Normalize()
 }
 
 type DictionaryLookupRequest struct {
@@ -98,13 +81,6 @@ type DictionaryBookListItem struct {
 	BookName string `gorm:"column:bookname" json:"bookname"`
 	VocCount *int   `gorm:"column:voccount" json:"voccount"`
 	Status   *int   `gorm:"column:status" json:"status"`
-}
-
-type DictionaryPageResult[T any] struct {
-	List     []T   `json:"list"`
-	Total    int64 `json:"total"`
-	Page     int   `json:"page"`
-	PageSize int   `json:"page_size"`
 }
 
 type DictionaryLookupResult struct {

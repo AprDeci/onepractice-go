@@ -72,6 +72,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 
 	paperService := service.NewPaperService(database)
 	recordHandler := handler.NewRecordHandler(service.NewRecordService(redisClient, paperService))
+	wordFavoriteHandler := handler.NewWordFavoriteHandler(service.NewWordFavoriteService(database))
 
 	protected := api.Group("")
 	protected.Use(plugin.AuthMiddleware())
@@ -81,6 +82,10 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 	protected.POST("/record/save", recordHandler.Save)
 	protected.GET("/record/list", recordHandler.List)
 	protected.POST("/record/update", recordHandler.Update)
+	protected.POST("/word/favorites", wordFavoriteHandler.Add)
+	protected.DELETE("/word/favorites", wordFavoriteHandler.Remove)
+	protected.GET("/word/favorites/check", wordFavoriteHandler.Check)
+	protected.GET("/word/favorites", wordFavoriteHandler.List)
 	// OpenAPI
 	r.GET("/openapi/*any", openapiui.WrapHandler(openapiui.Config{
 		SpecURL:      "/openapi/openapi.json",

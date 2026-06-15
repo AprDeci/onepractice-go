@@ -25,6 +25,8 @@ func writeError(c *gin.Context, err error) {
 		response.ErrorEnum(c, response.ErrTokenInvalid)
 	case errors.Is(err, service.ErrInvalidParam):
 		response.ErrorEnum(c, response.ErrParamInvalid)
+	case errors.Is(err, service.ErrWordNotFound):
+		response.Error(c, 404, "word not found")
 	case errors.Is(err, service.ErrDatabaseDisabled):
 		response.Error(c, 500, err.Error())
 	case errors.Is(err, service.ErrRedisDisabled):
