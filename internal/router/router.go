@@ -7,6 +7,7 @@ import (
 	"onepractice-golang/internal/service"
 
 	"github.com/PeterTakahashi/gin-openapi/openapiui"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	sagin "github.com/sa-tokens/sa-token-go/integrations/gin"
@@ -15,7 +16,7 @@ import (
 
 func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Logger(), middleware.Recovery())
+	r.Use(cors.Default(), gin.Logger(), middleware.Recovery())
 
 	health := handler.NewHealthHandler(database)
 	r.GET("/health", health.Check)
