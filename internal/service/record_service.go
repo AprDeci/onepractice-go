@@ -40,7 +40,8 @@ func (s *RecordService) Create(userID int64, req dto.RecordRequest) (string, err
 		return "", ErrInvalidParam
 	}
 
-	intro, err := s.paper.Intro(req.PaperID)
+	paperID := int(req.PaperID)
+	intro, err := s.paper.Intro(paperID)
 	if err != nil {
 		return "", ErrInvalidParam
 	}
@@ -50,7 +51,7 @@ func (s *RecordService) Create(userID int64, req dto.RecordRequest) (string, err
 	record := dto.UserExamRecord{
 		RecordID:     recordID,
 		UserID:       userID,
-		PaperID:      req.PaperID,
+		PaperID:      paperID,
 		PaperType:    intro.PaperType,
 		PaperName:    formatPaperName(intro),
 		Type:         req.Type,
@@ -60,7 +61,7 @@ func (s *RecordService) Create(userID int64, req dto.RecordRequest) (string, err
 		Score:        req.Score,
 		TotalScore:   req.TotalScore,
 		Timestamp:    now,
-		HasSpendTime: req.HasSpendTime,
+		HasSpendTime: int64(req.HasSpendTime),
 	}
 	if err := s.saveRecord(context.Background(), record); err != nil {
 		return "", err
@@ -148,7 +149,7 @@ func (s *RecordService) Update(userID int64, req dto.RecordRequest) error {
 	record.Score = req.Score
 	record.Answers = req.Answers
 	record.IsFinished = req.IsFinished
-	record.HasSpendTime = req.HasSpendTime
+	record.HasSpendTime = int64(req.HasSpendTime)
 	return s.saveRecord(ctx, record)
 }
 
