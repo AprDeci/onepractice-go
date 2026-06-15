@@ -150,6 +150,178 @@ paths:
       summary: 校验邮箱验证码
       tags:
       - captcha
+  /api/dictionary/books:
+    get:
+      description: 按词书名称和状态分页查询词书。
+      parameters:
+      - description: 词书名称关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 词书状态
+        in: query
+        name: status
+        type: integer
+      - description: 页码，默认 1
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量，默认 20，最大 100
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 分页查询词书
+      tags:
+      - dictionary
+  /api/dictionary/books/{bookid}/words:
+    get:
+      description: 根据词书 ID 分页查询该词书下的单词，支持关键词搜索。
+      parameters:
+      - description: 词书 ID
+        in: path
+        name: bookid
+        required: true
+        type: integer
+      - description: 在单词拼写和释义中搜索
+        in: query
+        name: keyword
+        type: string
+      - description: 页码，默认 1
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量，默认 20，最大 100
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 分页查询词书单词
+      tags:
+      - dictionary
+  /api/dictionary/lookup:
+    get:
+      description: 根据英文拼写查询中文释义，可选择精确匹配或模糊匹配。
+      parameters:
+      - description: 英文拼写
+        in: query
+        name: spelling
+        required: true
+        type: string
+      - description: 是否精确匹配，默认 false
+        in: query
+        name: exact
+        type: boolean
+      - description: 返回数量，默认 20，最大 100
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 按单词查询释义
+      tags:
+      - dictionary
+  /api/dictionary/words:
+    get:
+      description: 按关键词、拼写、释义、词书和词频范围分页查询单词。
+      parameters:
+      - description: 在单词拼写和释义中搜索
+        in: query
+        name: keyword
+        type: string
+      - description: 按英文拼写模糊搜索
+        in: query
+        name: spelling
+        type: string
+      - description: 按中文释义模糊搜索
+        in: query
+        name: paraphrase
+        type: string
+      - description: 词书 ID
+        in: query
+        name: bookid
+        type: integer
+      - description: 最小词频
+        in: query
+        name: min_frequency
+        type: number
+      - description: 最大词频
+        in: query
+        name: max_frequency
+        type: number
+      - description: 页码，默认 1
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量，默认 20，最大 100
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 分页查询单词
+      tags:
+      - dictionary
+  /api/dictionary/words/{wordid}:
+    get:
+      description: 根据单词 ID 获取单词基础信息、所属词书和例句。
+      parameters:
+      - description: 单词 ID
+        in: path
+        name: wordid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 获取单词详情
+      tags:
+      - dictionary
+  /api/dictionary/words/spelling/{spelling}:
+    get:
+      description: 根据英文拼写精确获取单词基础信息、所属词书和例句。
+      parameters:
+      - description: 英文拼写
+        in: path
+        name: spelling
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 按拼写获取单词详情
+      tags:
+      - dictionary
   /api/paper/all:
     get:
       description: 返回全部试卷列表。

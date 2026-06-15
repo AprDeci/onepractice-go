@@ -24,7 +24,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	r.Use( gin.Logger(), middleware.Recovery())
+	r.Use(gin.Logger(), middleware.Recovery())
 
 	health := handler.NewHealthHandler(database)
 	r.GET("/health", health.Check)
@@ -60,6 +60,15 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 	questions.GET("/getByType", questionHandler.ByPaperIDAndType)
 	questions.GET("/getAllByIdSplitByPart", questionHandler.SplitByPart)
 	questions.GET("/getAnswersByPaperId", questionHandler.Answers)
+
+	dictionaryHandler := handler.NewDictionaryHandler(service.NewDictionaryService(database))
+	dictionary := api.Group("/dictionary")
+	dictionary.GET("/lookup", dictionaryHandler.LookupMeanings)
+	dictionary.GET("/words", dictionaryHandler.ListWords)
+	dictionary.GET("/words/:wordid", dictionaryHandler.GetWordDetail)
+	dictionary.GET("/words/spelling/:spelling", dictionaryHandler.GetWordBySpelling)
+	dictionary.GET("/books", dictionaryHandler.ListBooks)
+	dictionary.GET("/books/:bookid/words", dictionaryHandler.ListBookWords)
 
 	paperService := service.NewPaperService(database)
 	recordHandler := handler.NewRecordHandler(service.NewRecordService(redisClient, paperService))

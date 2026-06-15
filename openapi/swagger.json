@@ -71,6 +71,268 @@
                 }
             }
         },
+        "/api/dictionary/books": {
+            "get": {
+                "description": "按词书名称和状态分页查询词书。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "分页查询词书",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "词书名称关键词",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "词书状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量，默认 20，最大 100",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/books/{bookid}/words": {
+            "get": {
+                "description": "根据词书 ID 分页查询该词书下的单词，支持关键词搜索。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "分页查询词书单词",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "词书 ID",
+                        "name": "bookid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "在单词拼写和释义中搜索",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量，默认 20，最大 100",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/lookup": {
+            "get": {
+                "description": "根据英文拼写查询中文释义，可选择精确匹配或模糊匹配。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "按单词查询释义",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "英文拼写",
+                        "name": "spelling",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否精确匹配，默认 false",
+                        "name": "exact",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量，默认 20，最大 100",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/words": {
+            "get": {
+                "description": "按关键词、拼写、释义、词书和词频范围分页查询单词。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "分页查询单词",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "在单词拼写和释义中搜索",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按英文拼写模糊搜索",
+                        "name": "spelling",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按中文释义模糊搜索",
+                        "name": "paraphrase",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "词书 ID",
+                        "name": "bookid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "最小词频",
+                        "name": "min_frequency",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "最大词频",
+                        "name": "max_frequency",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量，默认 20，最大 100",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/words/spelling/{spelling}": {
+            "get": {
+                "description": "根据英文拼写精确获取单词基础信息、所属词书和例句。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "按拼写获取单词详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "英文拼写",
+                        "name": "spelling",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/words/{wordid}": {
+            "get": {
+                "description": "根据单词 ID 获取单词基础信息、所属词书和例句。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "获取单词详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "单词 ID",
+                        "name": "wordid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
         "/api/paper/all": {
             "get": {
                 "description": "返回全部试卷列表。",
