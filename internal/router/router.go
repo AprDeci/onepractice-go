@@ -76,7 +76,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 	r.GET("/openapi/*any", openapiui.WrapHandler(openapiui.Config{
 		SpecURL:      "/openapi/openapi.json",
 		SpecFilePath: "./openapi/swagger.json",
-		Title:        "Example API",
+		Title:        "Onepractice API",
 		Theme:        "light", // or "dark"
 	}))
 
