@@ -42,7 +42,7 @@ func (s *CaptchaService) SendEmailCaptcha(email string) error {
 		return ErrInvalidParam
 	}
 
-	if err := s.checkSendCooldown(email); err != nil {
+	if err := s.ensureSendAllowed(email); err != nil {
 		return err
 	}
 
@@ -51,11 +51,15 @@ func (s *CaptchaService) SendEmailCaptcha(email string) error {
 		return err
 	}
 
-	if err := s.storeCode(email, code, CaptchaPurposeRegister); err != nil {
+	if err := s.mailer.Send(email, "Onepractice Verification Code", fmt.Sprintf("Verification code: %s", code)); err != nil {
 		return err
 	}
 
-	return s.mailer.Send(email, "onepractice 验证码", fmt.Sprintf("您的验证码是：%s，5分钟内有效。", code))
+	if err := s.storeCodeAndCooldown(email, code, CaptchaPurposeRegister); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *CaptchaService) VerifyRegister(email, code string) error {
@@ -121,27 +125,19 @@ func (s *CaptchaService) consumeCode(email, code, purpose string) error {
 	return s.redis.Del(ctx, key).Err()
 }
 
-func (s *CaptchaService) checkSendCooldown(email string) error {
+func (s *CaptchaService) ensureSendAllowed(email string) error {
 	if s.redis == nil {
 		return ErrRedisDisabled
 	}
 
-	ctx := context.Background()
-	ok, err := s.redis.SetNX(ctx, captchaCooldownKey(email), "1", 60*time.Second).Result()
+	exists, err := s.redis.Exists(context.Background(), captchaCooldownKey(email)).Result()
 	if err != nil {
 		return err
 	}
-	if !ok {
+	if exists > 0 {
 		return ErrEmailSendWait
 	}
 	return nil
-}
-
-func (s *CaptchaService) storeCode(email, code, purpose string) error {
-	if s.redis == nil {
-		return ErrRedisDisabled
-	}
-	return s.redis.Set(context.Background(), captchaCodeKey(email, purpose), code, 5*time.Minute).Err()
 }
 
 func (s *CaptchaService) storeResetToken(email, token string) error {
@@ -149,6 +145,19 @@ func (s *CaptchaService) storeResetToken(email, token string) error {
 		return ErrRedisDisabled
 	}
 	return s.redis.Set(context.Background(), resetTokenKey(email, token), email, 5*time.Minute).Err()
+}
+
+func (s *CaptchaService) storeCodeAndCooldown(email, code, purpose string) error {
+	if s.redis == nil {
+		return ErrRedisDisabled
+	}
+
+	ctx := context.Background()
+	pipe := s.redis.Pipeline()
+	pipe.Set(ctx, captchaCodeKey(email, purpose), code, 5*time.Minute)
+	pipe.Set(ctx, captchaCooldownKey(email), "1", 60*time.Second)
+	_, err := pipe.Exec(ctx)
+	return err
 }
 
 func captchaCodeKey(email, purpose string) string {

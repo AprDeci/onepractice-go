@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -37,12 +36,8 @@ type AuthConfig struct {
 }
 
 type MailConfig struct {
-	Host     string
-	Port     int
-	Username string
-	Password string
+	APIKey   string
 	From     string
-	Name     string
 	Disabled bool
 }
 
@@ -70,16 +65,11 @@ func Load() Config {
 			Timeout:   v.GetInt64("auth.timeout"),
 		},
 		Mail: MailConfig{
-			Host:     v.GetString("mail.host"),
-			Port:     v.GetInt("mail.port"),
-			Username: v.GetString("mail.username"),
-			Password: v.GetString("mail.password"),
+			APIKey:   v.GetString("mail.api_key"),
 			From:     v.GetString("mail.from"),
-			Name:     v.GetString("mail.name"),
 			Disabled: v.GetBool("mail.disabled"),
 		},
 	}
-	fmt.Println(cfg)
 	return cfg
 }
 
@@ -93,13 +83,9 @@ func bindEnvs(v *viper.Viper) {
 	bindEnv(v, "redis.disabled", "REDIS_DISABLED")
 	bindEnv(v, "auth.token_name", "SA_TOKEN_NAME")
 	bindEnv(v, "auth.timeout", "SA_TOKEN_TIMEOUT")
-	bindEnv(v, "mail.host", "SMTP_HOST")
-	bindEnv(v, "mail.port", "SMTP_PORT")
-	bindEnv(v, "mail.username", "SMTP_USERNAME")
-	bindEnv(v, "mail.password", "SMTP_PASSWORD")
-	bindEnv(v, "mail.from", "SMTP_FROM")
-	bindEnv(v, "mail.name", "SMTP_NAME")
-	bindEnv(v, "mail.disabled", "SMTP_DISABLED")
+	bindEnv(v, "mail.api_key", "SENDFLARE_API_KEY")
+	bindEnv(v, "mail.from", "SENDFLARE_FROM")
+	bindEnv(v, "mail.disabled", "SENDFLARE_DISABLED")
 }
 
 func bindEnv(v *viper.Viper, key string, envNames ...string) {
@@ -132,11 +118,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("redis.disabled", false)
 	v.SetDefault("auth.token_name", "Authorization")
 	v.SetDefault("auth.timeout", int64(15*24*60*60))
-	v.SetDefault("mail.port", 465)
-	v.SetDefault("mail.name", "onepractice")
 	v.SetDefault("mail.disabled", true)
+	v.SetDefault("mail.api_key", "")
 	v.SetDefault("mail.from", "")
-	v.SetDefault("mail.host", "")
-	v.SetDefault("mail.username", "")
-	v.SetDefault("mail.password", "")
 }

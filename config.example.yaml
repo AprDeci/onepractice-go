@@ -16,10 +16,6 @@ auth:
   timeout: 1296000
 
 mail:
-  host: ""
-  port: 465
-  username: ""
-  password: ""
+  api_key: ""
   from: ""
-  name: "onepractice"
   disabled: true

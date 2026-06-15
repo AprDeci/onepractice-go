@@ -10,6 +10,7 @@ require (
 	github.com/sa-tokens/sa-token-go/integrations/gin v0.2.2
 	github.com/sa-tokens/sa-token-go/storage/memory v0.2.2
 	github.com/sa-tokens/sa-token-go/storage/redis v0.2.2
+	github.com/sendflare/sendflare-sdk-go v1.0.7
 	github.com/spf13/viper v1.21.0
 	github.com/swaggo/swag v1.16.4
 	golang.org/x/crypto v0.51.0
