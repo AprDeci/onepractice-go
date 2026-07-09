@@ -116,7 +116,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("redis.addr", "fn.aprdec.top:6379")
 	v.SetDefault("redis.db", 0)
 	v.SetDefault("redis.disabled", false)
-	v.SetDefault("auth.token_name", "Authorization")
+	v.SetDefault("auth.token_name", "token")
 	v.SetDefault("auth.timeout", int64(15*24*60*60))
 	v.SetDefault("mail.disabled", true)
 	v.SetDefault("mail.api_key", "")

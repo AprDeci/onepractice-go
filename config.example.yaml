@@ -12,7 +12,7 @@ redis:
   disabled: false
 
 auth:
-  token_name: "Authorization"
+  token_name: "token"
   timeout: 1296000
 
 mail:
