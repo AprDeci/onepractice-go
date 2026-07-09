@@ -1,0 +1,14 @@
+-- Put real paper/question/rating data in new versioned .sql files, for example:
+--   100_exam_2024_06.sql
+--   101_exam_2024_12.sql
+-- Keep every insert idempotent because migrations may be replayed in new environments.
+
+-- INSERT INTO `papers` (`paper_id`, `paper_name`, `exam_year`, `exam_month`, `version`, `total_time`, `type`) VALUES
+--   (202406401, '2024年6月大学英语四级真题（一）', 2024, 6, 1, 125, 'CET-4')
+-- ON DUPLICATE KEY UPDATE
+--   `paper_name` = VALUES(`paper_name`),
+--   `exam_year` = VALUES(`exam_year`),
+--   `exam_month` = VALUES(`exam_month`),
+--   `version` = VALUES(`version`),
+--   `total_time` = VALUES(`total_time`),
+--   `type` = VALUES(`type`);

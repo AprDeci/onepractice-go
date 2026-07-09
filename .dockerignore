@@ -1,0 +1,10 @@
+.git
+.github
+.air.toml
+tmp
+*.exe
+*.log
+config.yaml
+deploy/.env
+deploy/mysql-data
+deploy/redis-data
