@@ -75,10 +75,9 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 	wordFavoriteHandler := handler.NewWordFavoriteHandler(service.NewWordFavoriteService(database))
 
 	protected := api.Group("")
-	protected.Use(plugin.AuthMiddleware())
+	protected.Use(middleware.Auth())
 	protected.GET("/user/info", userHandler.Info)
 	protected.POST("/user/logout", userHandler.Logout)
-	protected.GET("/auth/check", health.Check)
 	protected.POST("/record/save", recordHandler.Save)
 	protected.GET("/record/list", recordHandler.List)
 	protected.POST("/record/update", recordHandler.Update)
