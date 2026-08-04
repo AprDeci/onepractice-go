@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
+	"onepractice-golang/internal/dto"
 	"onepractice-golang/internal/response"
 	"onepractice-golang/internal/service"
 
@@ -105,6 +107,39 @@ func (h *QuestionHandler) Answers(c *gin.Context) {
 		return
 	}
 	response.Success(c, answers)
+}
+
+// Practice 随机获取指定数量试卷中的指定专项题型。
+// @Summary 获取专项训练题目
+// @Description 无需登录，返回随机试卷中的指定题型、题组和答案。
+// @Tags question
+// @Accept json
+// @Produce json
+// @Param request body dto.PracticeQuestionRequest true "专项训练参数"
+// @Success 200 {object} response.Body
+// @Router /api/question/practice [post]
+func (h *QuestionHandler) Practice(c *gin.Context) {
+	var req dto.PracticeQuestionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	questions, err := h.service.Practice(req.QuestionType, req.UnitCount)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrInvalidQuestionType):
+			response.Error(c, http.StatusBadRequest, err.Error())
+		case errors.Is(err, service.ErrInvalidPracticeUnitCount):
+			response.Error(c, http.StatusBadRequest, err.Error())
+		case errors.Is(err, service.ErrPracticeQuestionsNotFound):
+			response.Error(c, http.StatusNotFound, err.Error())
+		default:
+			response.Error(c, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+	response.Success(c, questions)
 }
 
 func queryInt(c *gin.Context, key string) (int, bool) {
