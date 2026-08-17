@@ -25,7 +25,7 @@ func NewCaptchaHandler(service *service.CaptchaService) *CaptchaHandler {
 // @Success 200 {object} response.Body
 // @Router /api/captcha/email [get]
 func (h *CaptchaHandler) Email(c *gin.Context) {
-	if err := h.service.SendEmailCaptcha(c.Query("email"), c.DefaultQuery("purpose", service.CaptchaPurposeRegister)); err != nil {
+	if err := h.service.SendEmailCaptcha(c.Request.Context(), c.Query("email"), c.DefaultQuery("purpose", service.CaptchaPurposeRegister)); err != nil {
 		writeError(c, err)
 		return
 	}
@@ -48,7 +48,7 @@ func (h *CaptchaHandler) VerifyEmail(c *gin.Context) {
 		return
 	}
 
-	token, err := h.service.VerifyResetPassword(req.Email, req.Code)
+	token, err := h.service.VerifyResetPassword(c.Request.Context(), req.Email, req.Code)
 	if err != nil {
 		writeError(c, err)
 		return

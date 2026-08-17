@@ -33,7 +33,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	result, err := h.service.Register(req)
+	result, err := h.service.Register(c.Request.Context(), req)
 	if err != nil {
 		writeError(c, err)
 		return
@@ -124,7 +124,7 @@ func (h *UserHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ResetPassword(req); err != nil {
+	if err := h.service.ResetPassword(c.Request.Context(), req); err != nil {
 		writeError(c, err)
 		return
 	}
