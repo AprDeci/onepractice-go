@@ -60,6 +60,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 	questions.GET("/getByType", questionHandler.ByPaperIDAndType)
 	questions.GET("/getAllByIdSplitByPart", questionHandler.SplitByPart)
 	questions.GET("/getAnswersByPaperId", questionHandler.Answers)
+	questions.POST("/practice", questionHandler.Practice)
 
 	dictionaryHandler := handler.NewDictionaryHandler(service.NewDictionaryService(database))
 	dictionary := api.Group("/dictionary")
