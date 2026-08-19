@@ -31,6 +31,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 
 	plugin := sagin.NewPlugin(sagin.GetManager())
 	api := r.Group("/api")
+	api.Use(middleware.TimeoutMiddleware(5 * time.Second))
 	api.Use(plugin.TokenInterceptor())
 
 	captchaService := service.NewCaptchaService(database, cfg.Mail, redisClient)
