@@ -52,9 +52,15 @@ func NewQueue(ctx context.Context, redis *redis.Client, opts ...Option) *Queue {
 }
 
 func (q *Queue) Start() {
+	if q == nil || q.redis == nil {
+		return
+	}
 	go q.consumer.listen(q.redis, q.topic)
 }
 
-func (q *Queue) publish(msg *Message) (int64, error) {
+func (q *Queue) Publish(msg *Message) (int64, error) {
+	if q == nil || q.redis == nil {
+		return 0, nil
+	}
 	return q.producer.publish(q.redis, q.topic, msg)
 }

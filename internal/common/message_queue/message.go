@@ -8,10 +8,10 @@ import (
 )
 
 type Message struct {
-	Id          string `json:"id"`
-	CreateTime  time.Time
-	ConsumeTime time.Time
-	Body        interface{} `json:body`
+	Id          string      `json:"id"`
+	CreateTime  time.Time   `json:"create_time"`
+	ConsumeTime time.Time   `json:"consume_time"`
+	Body        interface{} `json:"body"`
 }
 
 func NewMessage(id string, consumeTIme time.Time, body interface{}) *Message {

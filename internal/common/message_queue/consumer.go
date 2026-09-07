@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type handlerFunc func(msg Message)
+type Handler func(msg Message)
 
 func defaultHandler(msg Message) {
 	fmt.Println(msg)
@@ -20,10 +20,10 @@ type consumer struct {
 	ctx      context.Context
 	duration time.Duration
 	ch       chan []string
-	handler  handlerFunc
+	handler  Handler
 }
 
-func NewConsumer(ctx context.Context, handler handlerFunc) *consumer {
+func NewConsumer(ctx context.Context, handler Handler) *consumer {
 	return &consumer{
 		ctx:      ctx,
 		duration: time.Second,

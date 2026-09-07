@@ -4,7 +4,7 @@ type Option func(*Options)
 
 type Options struct {
 	topic   string
-	handler handlerFunc
+	handler Handler
 }
 
 func WithTopic(topic string) Option {
@@ -13,7 +13,7 @@ func WithTopic(topic string) Option {
 	}
 }
 
-func WithHandler(handler handlerFunc) Option {
+func WithHandler(handler Handler) Option {
 	return func(opts *Options) {
 		opts.handler = handler
 	}
