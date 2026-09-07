@@ -2,11 +2,11 @@ package handler
 
 import (
 	"errors"
-	"net/http"
 	"strconv"
 
+	"onepractice-golang/internal/common/apperror"
+	"onepractice-golang/internal/common/response"
 	"onepractice-golang/internal/dto"
-	"onepractice-golang/internal/response"
 	"onepractice-golang/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -39,13 +39,20 @@ func NewDictionaryHandler(service *service.DictionaryService) *DictionaryHandler
 func (h *DictionaryHandler) ListWords(c *gin.Context) {
 	var req dto.DictionaryWordListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	result, err := h.service.ListWords(req)
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
 	response.Success(c, result)
@@ -64,13 +71,20 @@ func (h *DictionaryHandler) ListWords(c *gin.Context) {
 func (h *DictionaryHandler) LookupMeanings(c *gin.Context) {
 	var req dto.DictionaryLookupRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	result, err := h.service.LookupMeanings(req)
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
 	response.Success(c, result)
@@ -87,17 +101,24 @@ func (h *DictionaryHandler) LookupMeanings(c *gin.Context) {
 func (h *DictionaryHandler) GetWordDetail(c *gin.Context) {
 	wordID, err := strconv.ParseUint(c.Param("wordid"), 10, 64)
 	if err != nil || wordID == 0 {
-		response.Error(c, http.StatusBadRequest, "wordid must be positive integer")
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "wordid must be positive integer"))
 		return
 	}
 
 	result, err := h.service.GetWordDetail(uint(wordID))
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		response.Error(c, http.StatusNotFound, "word not found")
+		response.Error(c, apperror.New(apperror.CodeNotFound, "word not found"))
 		return
 	}
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
 	response.Success(c, result)
@@ -114,11 +135,18 @@ func (h *DictionaryHandler) GetWordDetail(c *gin.Context) {
 func (h *DictionaryHandler) GetWordBySpelling(c *gin.Context) {
 	result, err := h.service.GetWordBySpelling(c.Param("spelling"))
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		response.Error(c, http.StatusNotFound, "word not found")
+		response.Error(c, apperror.New(apperror.CodeNotFound, "word not found"))
 		return
 	}
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
 	response.Success(c, result)
@@ -138,13 +166,20 @@ func (h *DictionaryHandler) GetWordBySpelling(c *gin.Context) {
 func (h *DictionaryHandler) ListBooks(c *gin.Context) {
 	var req dto.DictionaryBookListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	result, err := h.service.ListBooks(req)
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
 	response.Success(c, result)
@@ -164,19 +199,26 @@ func (h *DictionaryHandler) ListBooks(c *gin.Context) {
 func (h *DictionaryHandler) ListBookWords(c *gin.Context) {
 	bookID, err := strconv.ParseUint(c.Param("bookid"), 10, 64)
 	if err != nil || bookID == 0 {
-		response.Error(c, http.StatusBadRequest, "bookid must be positive integer")
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "bookid must be positive integer"))
 		return
 	}
 
 	var req dto.DictionaryBookWordsRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	result, err := h.service.ListBookWords(uint(bookID), req)
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
 	response.Success(c, result)

@@ -1,12 +1,16 @@
 package handler
 
 import (
+	"errors"
+
+	"onepractice-golang/internal/common/apperror"
+	"onepractice-golang/internal/common/response"
 	"onepractice-golang/internal/dto"
-	"onepractice-golang/internal/response"
 	"onepractice-golang/internal/service"
 
 	"github.com/gin-gonic/gin"
 	sagin "github.com/sa-tokens/sa-token-go/integrations/gin"
+	"gorm.io/gorm"
 )
 
 type UserHandler struct {
@@ -29,13 +33,22 @@ func NewUserHandler(service *service.UserService) *UserHandler {
 func (h *UserHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.ErrorEnum(c, response.ErrParamInvalid)
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	result, err := h.service.Register(c.Request.Context(), req)
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrUsernameExists), errors.Is(err, service.ErrEmailExists):
+			response.Error(c, apperror.New(apperror.CodeConflict, "资源已存在"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
 	response.Success(c, result)
@@ -53,13 +66,22 @@ func (h *UserHandler) Register(c *gin.Context) {
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.ErrorEnum(c, response.ErrParamInvalid)
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	result, err := h.service.Login(req)
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrPasswordOrUserError):
+			response.Error(c, apperror.New(apperror.CodeUnauthorized, "用户名或密码错误"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
 	response.Success(c, result)
@@ -81,7 +103,14 @@ func (h *UserHandler) Info(c *gin.Context) {
 
 	info, err := h.service.Info(userID)
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			response.Error(c, apperror.New(apperror.CodeNotFound, "资源不存在"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
 	response.Success(c, info)
@@ -98,14 +127,14 @@ func (h *UserHandler) Info(c *gin.Context) {
 func (h *UserHandler) Logout(c *gin.Context) {
 	token := sagin.GetTokenFromCtx(c)
 	if token == "" {
-		response.ErrorEnum(c, response.ErrTokenInvalid)
+		response.Error(c, apperror.New(apperror.CodeUnauthorized, "Token失效"))
 		return
 	}
 	if err := sagin.LogoutByToken(token); err != nil {
-		writeError(c, err)
+		response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
 		return
 	}
-	response.SuccessNoData(c)
+	response.Success(c, nil)
 }
 
 // ResetPassword 重置密码。
@@ -120,26 +149,35 @@ func (h *UserHandler) Logout(c *gin.Context) {
 func (h *UserHandler) ResetPassword(c *gin.Context) {
 	var req dto.ResetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.ErrorEnum(c, response.ErrParamInvalid)
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	if err := h.service.ResetPassword(c.Request.Context(), req); err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam), errors.Is(err, service.ErrCaptchaInvalid):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrTokenInvalid):
+			response.Error(c, apperror.New(apperror.CodeUnauthorized, "Token失效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		}
 		return
 	}
-	response.SuccessNoData(c)
+	response.Success(c, nil)
 }
 
 func loginID(c *gin.Context) (int64, bool) {
 	token := sagin.GetTokenFromCtx(c)
 	if token == "" {
-		response.ErrorEnum(c, response.ErrTokenInvalid)
+		response.Error(c, apperror.New(apperror.CodeUnauthorized, "Token失效"))
 		return 0, false
 	}
 	loginID, err := service.LoginIDFromToken(token)
 	if err != nil {
-		response.ErrorEnum(c, response.ErrTokenInvalid)
+		response.Error(c, apperror.New(apperror.CodeUnauthorized, "Token失效"))
 		return 0, false
 	}
 	return loginID, true

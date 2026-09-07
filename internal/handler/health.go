@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"onepractice-golang/internal/response"
+	"onepractice-golang/internal/common/response"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
