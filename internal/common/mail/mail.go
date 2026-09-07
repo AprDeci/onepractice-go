@@ -46,16 +46,16 @@ func NewModule(ctx context.Context, cfg config.MailConfig, redisClient *redis.Cl
 		queueCtx,
 		redisClient,
 		message_queue.WithTopic("onepractice:mail"),
-		message_queue.WithHandler(func(msg message_queue.Message) {
+		message_queue.WithHandler(func(ctx context.Context, msg message_queue.Message) error {
 			var item message
 			data, err := json.Marshal(msg.Body)
-			if err != nil || json.Unmarshal(data, &item) != nil {
-				slog.Error("decode mail message", "error", err)
-				return
+			if err != nil {
+				return fmt.Errorf("marshal mail message: %w", err)
 			}
-			if err := provider.Send(queueCtx, item.To, item.Subject, item.Body); err != nil {
-				slog.Error("send queued mail", "error", err, "to", item.To, "subject", item.Subject)
+			if err := json.Unmarshal(data, &item); err != nil {
+				return fmt.Errorf("unmarshal mail message: %w", err)
 			}
+			return provider.Send(ctx, item.To, item.Subject, item.Body)
 		}),
 	)
 	queue.Start()
