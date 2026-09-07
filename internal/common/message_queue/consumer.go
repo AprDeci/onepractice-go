@@ -33,6 +33,8 @@ func NewConsumer(ctx context.Context, handler handlerFunc) *consumer {
 }
 
 func (c *consumer) listen(redisClient *redis.Client, topic string) {
+
+	// 处理消息
 	go func() {
 		for {
 			select {
@@ -59,6 +61,7 @@ func (c *consumer) listen(redisClient *redis.Client, topic string) {
 		}
 	}()
 
+	// 监听消息
 	ticker := time.NewTicker(c.duration)
 	defer ticker.Stop()
 
@@ -74,7 +77,7 @@ func (c *consumer) listen(redisClient *redis.Client, topic string) {
 			key := topic + SetSuffix
 			result, err := redisClient.ZRange(c.ctx, key, start, end).Result()
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
 				return
 			}
 
