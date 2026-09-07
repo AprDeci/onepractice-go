@@ -6,11 +6,16 @@ import (
 	"testing"
 	"time"
 
-	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/service"
 
 	"github.com/redis/go-redis/v9"
 )
+
+type fakeMailSender struct{}
+
+func (fakeMailSender) Send(context.Context, string, string, string) error {
+	return nil
+}
 
 func TestCaptchaServiceSendEmailCaptchaUsesCanceledContext(t *testing.T) {
 	redisClient := redis.NewClient(&redis.Options{
@@ -18,10 +23,10 @@ func TestCaptchaServiceSendEmailCaptchaUsesCanceledContext(t *testing.T) {
 	})
 	defer redisClient.Close()
 
-	captchaService := service.NewCaptchaService(
+	captchaService := service.NewCaptchaServiceWithSender(
 		nil,
-		config.MailConfig{Disabled: true},
 		redisClient,
+		fakeMailSender{},
 	)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -39,10 +44,10 @@ func TestCaptchaServiceSendEmailCaptchaUsesExpiredDeadline(t *testing.T) {
 	})
 	defer redisClient.Close()
 
-	captchaService := service.NewCaptchaService(
+	captchaService := service.NewCaptchaServiceWithSender(
 		nil,
-		config.MailConfig{Disabled: true},
 		redisClient,
+		fakeMailSender{},
 	)
 
 	ctx, cancel := context.WithTimeout(

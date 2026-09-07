@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"onepractice-golang/internal/auth"
+	"onepractice-golang/internal/common/mail"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/router"
 
@@ -27,6 +28,7 @@ type App struct {
 	Server *http.Server
 	DB     *gorm.DB
 	Redis  *redis.Client
+	Mail   *mail.Module
 
 	closeOnce sync.Once
 	closeErr  error
@@ -57,7 +59,8 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 	}
 
 	auth.Init(cfg.Auth, redisClient)
-	engine := router.New(cfg, database, redisClient)
+	mailModule := mail.NewModule(context.Background(), cfg.Mail, redisClient)
+	engine := router.New(cfg, database, redisClient, mailModule.Sender)
 
 	return &App{
 		Config: cfg,
@@ -67,6 +70,7 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 		},
 		DB:    database,
 		Redis: redisClient,
+		Mail:  mailModule,
 	}, nil
 }
 
@@ -141,6 +145,9 @@ func (a *App) Close() error {
 
 	a.closeOnce.Do(func() {
 		var errs []error
+		if a.Mail != nil {
+			a.Mail.Close()
+		}
 		if err := closeDatabase(a.DB); err != nil {
 			errs = append(errs, fmt.Errorf("close database: %w", err))
 		}

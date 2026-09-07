@@ -15,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.Engine {
+func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSender service.MailSender) *gin.Engine {
 	r := gin.New()
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -34,7 +34,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client) *gin.E
 	api.Use(middleware.TimeoutMiddleware(5 * time.Second))
 	api.Use(plugin.TokenInterceptor())
 
-	captchaService := service.NewCaptchaService(database, cfg.Mail, redisClient)
+	captchaService := service.NewCaptchaServiceWithSender(database, redisClient, mailSender)
 	userHandler := handler.NewUserHandler(service.NewUserService(database, captchaService))
 	users := api.Group("/user")
 	users.POST("/register", userHandler.Register)

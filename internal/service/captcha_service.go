@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/model"
 	"onepractice-golang/internal/utils"
 
@@ -24,12 +23,16 @@ const (
 
 type CaptchaService struct {
 	db     *gorm.DB
-	mailer *MailService
+	mailer MailSender
 	redis  *redis.Client
 }
 
-func NewCaptchaService(db *gorm.DB, mailCfg config.MailConfig, redisClient *redis.Client) *CaptchaService {
-	return &CaptchaService{db: db, mailer: NewMailService(mailCfg), redis: redisClient}
+type MailSender interface {
+	Send(ctx context.Context, to, subject, body string) error
+}
+
+func NewCaptchaServiceWithSender(db *gorm.DB, redisClient *redis.Client, mailer MailSender) *CaptchaService {
+	return &CaptchaService{db: db, mailer: mailer, redis: redisClient}
 }
 
 func (s *CaptchaService) SendEmailCaptcha(ctx context.Context, email, purpose string) error {
@@ -52,7 +55,7 @@ func (s *CaptchaService) SendEmailCaptcha(ctx context.Context, email, purpose st
 		return err
 	}
 
-	if err := s.mailer.Send(email, "Onepractice Verification Code", fmt.Sprintf("Verification code: %s", code)); err != nil {
+	if err := s.mailer.Send(ctx, email, "Onepractice Verification Code", fmt.Sprintf("Verification code: %s", code)); err != nil {
 		return err
 	}
 
