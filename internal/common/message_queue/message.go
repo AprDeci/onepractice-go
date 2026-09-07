@@ -11,6 +11,9 @@ type Message struct {
 	Id          string      `json:"id"`
 	CreateTime  time.Time   `json:"create_time"`
 	ConsumeTime time.Time   `json:"consume_time"`
+	RetryCount  int         `json:"retry_count"`
+	MaxRetries  int         `json:"max_retries"`
+	LastError   string      `json:"last_error,omitempty"`
 	Body        interface{} `json:"body"`
 }
 
@@ -24,6 +27,7 @@ func NewMessage(id string, consumeTIme time.Time, body interface{}) *Message {
 		Id:          id,
 		CreateTime:  time.Now(),
 		ConsumeTime: consumeTIme,
+		MaxRetries:  5,
 		Body:        body,
 	}
 }
