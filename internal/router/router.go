@@ -33,6 +33,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 	api := r.Group("/api")
 	api.Use(middleware.TimeoutMiddleware(5 * time.Second))
 	api.Use(plugin.TokenInterceptor())
+	api.Use(middleware.RequestID())
 
 	captchaService := service.NewCaptchaServiceWithSender(database, redisClient, mailSender)
 	userHandler := handler.NewUserHandler(service.NewUserService(database, captchaService))
