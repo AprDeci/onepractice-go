@@ -2,7 +2,6 @@ package message_queue
 
 import (
 	"context"
-	"sync"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -11,8 +10,6 @@ const (
 	HashSuffix = ":hash"
 	SetSuffix  = ":set"
 )
-
-var once sync.Once
 
 type Queue struct {
 	ctx context.Context
@@ -25,27 +22,20 @@ type Queue struct {
 }
 
 func NewQueue(ctx context.Context, redis *redis.Client, opts ...Option) *Queue {
-	var queue *Queue
-	var defaultOptions Options
-
-	once.Do(func() {
-		defaultOptions = Options{
-			topic:   "topic",
-			handler: defaultHandler,
-		}
-	})
+	defaultOptions := Options{topic: "topic", handler: defaultHandler, workers: 4, batchSize: 8}
 
 	for _, apply := range opts {
 		apply(&defaultOptions)
 	}
 
+	producer := NewProducer(ctx)
 	// 创建Queue实例
-	queue = &Queue{
+	queue := &Queue{
 		ctx:      ctx,
 		redis:    redis,
 		topic:    defaultOptions.topic,
-		producer: NewProducer(ctx),                         // 创建生产者
-		consumer: NewConsumer(ctx, defaultOptions.handler), // 创建消费者，使用处理函数
+		producer: producer,
+		consumer: NewConsumer(ctx, defaultOptions.handler, producer, defaultOptions.workers, defaultOptions.batchSize),
 	}
 
 	return queue
