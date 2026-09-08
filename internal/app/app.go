@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,6 +14,7 @@ import (
 	"time"
 
 	"onepractice-golang/internal/auth"
+	"onepractice-golang/internal/common/logger"
 	"onepractice-golang/internal/common/mail"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/router"
@@ -24,11 +27,13 @@ const shutdownTimeout = 5 * time.Second
 
 // App owns the HTTP server and the resources it needs to serve requests.
 type App struct {
-	Config config.Config
-	Server *http.Server
-	DB     *gorm.DB
-	Redis  *redis.Client
-	Mail   *mail.Module
+	Config    config.Config
+	Server    *http.Server
+	DB        *gorm.DB
+	Redis     *redis.Client
+	Logger    *slog.Logger
+	logCloser io.Closer
+	Mail      *mail.Module
 
 	closeOnce sync.Once
 	closeErr  error
@@ -58,9 +63,14 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 		return nil, fmt.Errorf("open redis: %w", err)
 	}
 
+	logger, logCloser, err := logger.New(&cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	auth.Init(cfg.Auth, redisClient)
 	mailModule := mail.NewModule(context.Background(), cfg.Mail, redisClient)
-	engine := router.New(cfg, database, redisClient, mailModule.Sender)
+	engine := router.New(cfg, database, redisClient, mailModule.Sender, logger)
 
 	return &App{
 		Config: cfg,
@@ -68,9 +78,11 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 			Addr:    ":" + cfg.Server.Port,
 			Handler: engine,
 		},
-		DB:    database,
-		Redis: redisClient,
-		Mail:  mailModule,
+		DB:        database,
+		Redis:     redisClient,
+		Logger:    logger,
+		logCloser: logCloser,
+		Mail:      mailModule,
 	}, nil
 }
 
@@ -150,6 +162,11 @@ func (a *App) Close() error {
 		}
 		if err := closeDatabase(a.DB); err != nil {
 			errs = append(errs, fmt.Errorf("close database: %w", err))
+		}
+		if a.logCloser != nil {
+			if err := a.logCloser.Close(); err != nil {
+				errs = append(errs, fmt.Errorf("close logger: %w", err))
+			}
 		}
 		if err := closeRedis(a.Redis); err != nil {
 			errs = append(errs, fmt.Errorf("close redis: %w", err))

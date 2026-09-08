@@ -1,6 +1,7 @@
 package router
 
 import (
+	"log/slog"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/handler"
 	"onepractice-golang/internal/middleware"
@@ -15,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSender service.MailSender) *gin.Engine {
+func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSender service.MailSender, logger *slog.Logger) *gin.Engine {
 	r := gin.New()
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -24,7 +25,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	r.Use(gin.Logger(), middleware.Recovery())
+	r.Use(middleware.AccessLog(logger), middleware.Recovery())
 
 	health := handler.NewHealthHandler(database)
 	r.GET("/health", health.Check)

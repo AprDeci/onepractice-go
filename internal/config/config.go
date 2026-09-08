@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Server   ServerConfig
+	Log      LogConfig
 	Database DatabaseConfig
 	Redis    RedisConfig
 	Auth     AuthConfig
@@ -41,6 +42,15 @@ type MailConfig struct {
 	Disabled bool
 }
 
+// LogConfig 描述日志目录、级别和输出方式。
+type LogConfig struct {
+	Dir           string `mapstructure:"dir"`
+	Level         string `mapstructure:"level"`
+	Console       bool   `mapstructure:"console"`
+	AddSource     bool   `mapstructure:"add_source"`
+	RetentionDays int    `mapstructure:"retention_days"`
+}
+
 func Load() Config {
 	v := viper.New()
 	setDefaults(v)
@@ -63,6 +73,13 @@ func Load() Config {
 		Auth: AuthConfig{
 			TokenName: v.GetString("auth.token_name"),
 			Timeout:   v.GetInt64("auth.timeout"),
+		},
+		Log: LogConfig{
+			Dir:           v.GetString("log.dir"),
+			Level:         v.GetString("log.level"),
+			Console:       v.GetBool("log.console"),
+			AddSource:     v.GetBool("log.add_source"),
+			RetentionDays: v.GetInt("log.retention_days"),
 		},
 		Mail: MailConfig{
 			APIKey:   v.GetString("mail.api_key"),
@@ -118,6 +135,11 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("redis.disabled", false)
 	v.SetDefault("auth.token_name", "token")
 	v.SetDefault("auth.timeout", int64(15*24*60*60))
+	v.SetDefault("log.dir", "./log")
+	v.SetDefault("log.level", "info")
+	v.SetDefault("log.console", true)
+	v.SetDefault("log.add_source", false)
+	v.SetDefault("log.retention_days", 7)
 	v.SetDefault("mail.disabled", true)
 	v.SetDefault("mail.api_key", "")
 	v.SetDefault("mail.from", "")
