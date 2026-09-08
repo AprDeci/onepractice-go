@@ -34,7 +34,7 @@ func (h *PaperHandler) All(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -65,7 +65,7 @@ func (h *PaperHandler) Page(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -96,7 +96,7 @@ func (h *PaperHandler) PageWithRating(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -114,7 +114,7 @@ func (h *PaperHandler) PageWithRating(c *gin.Context) {
 func (h *PaperHandler) ByType(c *gin.Context) {
 	papers, err := h.service.ByType(c.Query("type"))
 	if err != nil {
-		response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		return
 	}
 	response.Success(c, papers)
@@ -130,7 +130,7 @@ func (h *PaperHandler) ByType(c *gin.Context) {
 func (h *PaperHandler) Types(c *gin.Context) {
 	types, err := h.service.Types()
 	if err != nil {
-		response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		return
 	}
 	response.Success(c, types)
@@ -159,7 +159,7 @@ func (h *PaperHandler) Intro(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}

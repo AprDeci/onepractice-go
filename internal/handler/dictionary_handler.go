@@ -51,7 +51,7 @@ func (h *DictionaryHandler) ListWords(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -83,7 +83,7 @@ func (h *DictionaryHandler) LookupMeanings(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -117,7 +117,7 @@ func (h *DictionaryHandler) GetWordDetail(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -145,7 +145,7 @@ func (h *DictionaryHandler) GetWordBySpelling(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -178,7 +178,7 @@ func (h *DictionaryHandler) ListBooks(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -217,7 +217,7 @@ func (h *DictionaryHandler) ListBookWords(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}

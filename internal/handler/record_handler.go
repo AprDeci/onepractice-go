@@ -50,7 +50,7 @@ func (h *RecordHandler) Save(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -84,7 +84,7 @@ func (h *RecordHandler) List(c *gin.Context) {
 		case errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -118,7 +118,7 @@ func (h *RecordHandler) Update(c *gin.Context) {
 		case errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}

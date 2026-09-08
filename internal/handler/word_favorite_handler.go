@@ -49,7 +49,7 @@ func (h *WordFavoriteHandler) Add(c *gin.Context) {
 		} else if errors.Is(err, service.ErrDatabaseDisabled) {
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		} else {
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -86,7 +86,7 @@ func (h *WordFavoriteHandler) Remove(c *gin.Context) {
 		} else if errors.Is(err, service.ErrDatabaseDisabled) {
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		} else {
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -124,7 +124,7 @@ func (h *WordFavoriteHandler) Check(c *gin.Context) {
 		} else if errors.Is(err, service.ErrDatabaseDisabled) {
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		} else {
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -163,7 +163,7 @@ func (h *WordFavoriteHandler) List(c *gin.Context) {
 		} else if errors.Is(err, service.ErrDatabaseDisabled) {
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		} else {
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}

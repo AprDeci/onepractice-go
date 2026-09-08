@@ -39,7 +39,7 @@ func (h *CaptchaHandler) Email(c *gin.Context) {
 		case errors.Is(err, service.ErrEmailSendWait):
 			response.Error(c, apperror.New(apperror.CodeConflict, "请稍后重试"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -72,7 +72,7 @@ func (h *CaptchaHandler) VerifyEmail(c *gin.Context) {
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, "系统异常"))
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
