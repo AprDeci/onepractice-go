@@ -25,7 +25,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	r.Use(middleware.AccessLog(logger), middleware.Recovery(logger))
+	r.Use(middleware.RequestID(), middleware.AccessLog(logger), middleware.Recovery(logger))
 
 	health := handler.NewHealthHandler(database)
 	r.GET("/health", health.Check)
@@ -34,7 +34,6 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 	api := r.Group("/api")
 	api.Use(middleware.TimeoutMiddleware(5 * time.Second))
 	api.Use(plugin.TokenInterceptor())
-	api.Use(middleware.RequestID())
 
 	captchaService := service.NewCaptchaServiceWithSender(database, redisClient, mailSender)
 	userHandler := handler.NewUserHandler(service.NewUserService(database, captchaService))

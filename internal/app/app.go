@@ -67,6 +67,7 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	slog.SetDefault(logger)
 
 	auth.Init(cfg.Auth, redisClient)
 	mailModule := mail.NewModule(context.Background(), cfg.Mail, redisClient)
