@@ -25,7 +25,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	r.Use(middleware.AccessLog(logger), middleware.Recovery())
+	r.Use(middleware.AccessLog(logger), middleware.Recovery(logger))
 
 	health := handler.NewHealthHandler(database)
 	r.GET("/health", health.Check)
