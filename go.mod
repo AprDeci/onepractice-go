@@ -58,6 +58,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.1 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sa-tokens/sa-token-go/core v0.2.2 // indirect
 	github.com/sa-tokens/sa-token-go/stputil v0.2.2 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect

@@ -13,6 +13,7 @@ type Config struct {
 	Redis    RedisConfig
 	Auth     AuthConfig
 	Mail     MailConfig
+	Cron     CronConfig `mapstructure:"cron"`
 }
 
 type ServerConfig struct {
@@ -50,6 +51,19 @@ type LogConfig struct {
 	AddSource     bool   `mapstructure:"add_source"`
 	RetentionDays int    `mapstructure:"retention_days"`
 }
+
+// CORSConfig 描述允许跨域访问的来源和凭证策略。
+type CORSConfig struct {
+	AllowedOrigins   []string `mapstructure:"allowed_origins"`
+	AllowCredentials bool     `mapstructure:"allow_credentials"`
+}
+
+type CronTaskConfig struct {
+	Enabled    bool   `mapstructure:"enabled"`
+	Expression string `mapstructure:"expression"`
+}
+
+type CronConfig map[string]CronTaskConfig
 
 func Load() Config {
 	v := viper.New()
