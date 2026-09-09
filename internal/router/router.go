@@ -90,8 +90,8 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 	protected.GET("/word/favorites", wordFavoriteHandler.List)
 	// OpenAPI
 	r.GET("/openapi/*any", openapiui.WrapHandler(openapiui.Config{
-		SpecURL:      "/openapi/openapi.json",
-		SpecFilePath: "./openapi/swagger.json",
+		SpecURL:      "/docs/openapi.json",
+		SpecFilePath: "./docs/swagger.json",
 		Title:        "Onepractice API",
 		Theme:        "light", // or "dark"
 	}))
