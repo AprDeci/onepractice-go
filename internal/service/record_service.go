@@ -70,8 +70,13 @@ func (s *RecordService) Create(userID int64, req dto.RecordRequest) (string, err
 }
 
 func (s *RecordService) ListRecent(userID int64, days, pageNum, pageSize int) ([]dto.UserExamRecord, error) {
+	records, _, err := s.ListRecentPage(userID, days, pageNum, pageSize)
+	return records, err
+}
+
+func (s *RecordService) ListRecentPage(userID int64, days, pageNum, pageSize int) ([]dto.UserExamRecord, int64, error) {
 	if s.redis == nil {
-		return nil, ErrRedisDisabled
+		return nil, 0, ErrRedisDisabled
 	}
 	if days <= 0 {
 		days = defaultListDays
@@ -96,7 +101,11 @@ func (s *RecordService) ListRecent(userID int64, days, pageNum, pageSize int) ([
 	stop := start + int64(pageSize) - 1
 	recordIDs, err := s.redis.ZRevRange(ctx, zsetKey, start, stop).Result()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+	total, err := s.redis.ZCard(ctx, zsetKey).Result()
+	if err != nil {
+		return nil, 0, err
 	}
 
 	records := make([]dto.UserExamRecord, 0, len(recordIDs))
@@ -124,7 +133,7 @@ func (s *RecordService) ListRecent(userID int64, days, pageNum, pageSize int) ([
 		_ = s.redis.ZRem(ctx, zsetKey, args...).Err()
 	}
 	sort.Slice(records, func(i, j int) bool { return records[i].Timestamp > records[j].Timestamp })
-	return records, nil
+	return records, total, nil
 }
 
 func (s *RecordService) Update(userID int64, req dto.RecordRequest) error {

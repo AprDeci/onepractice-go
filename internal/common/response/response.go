@@ -30,6 +30,21 @@ func Success(c *gin.Context, data any) {
 	})
 }
 
+// Created writes a successful resource-creation response.
+func Created(c *gin.Context, data any) {
+	c.JSON(http.StatusCreated, Body{
+		Code:      apperror.CodeOK,
+		Message:   "created",
+		Data:      data,
+		RequestID: requestID(c),
+	})
+}
+
+// NoContent writes a successful response without a body.
+func NoContent(c *gin.Context) {
+	c.Status(http.StatusNoContent)
+}
+
 // Error 将应用错误转换为统一响应结构。
 func Error(c *gin.Context, err error) {
 	if err != nil {
