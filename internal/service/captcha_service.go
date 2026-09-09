@@ -219,3 +219,10 @@ func randomCode() (string, error) {
 func normalizeEmail(email string) string {
 	return strings.ToLower(strings.TrimSpace(email))
 }
+
+func captchaEmailIntro(purpose string) string {
+	if purpose == CaptchaPurposeResetPassword {
+		return "你正在进行密码重置"
+	}
+	return "你正在进行注册"
+}
