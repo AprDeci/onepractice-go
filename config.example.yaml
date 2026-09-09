@@ -19,3 +19,7 @@ mail:
   api_key: ""
   from: ""
   disabled: true
+
+llm:
+  glm_key: ""
+  deepseek_key: ""

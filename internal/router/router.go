@@ -2,6 +2,7 @@ package router
 
 import (
 	"log/slog"
+	"onepractice-golang/internal/agent/llm"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/handler"
 	"onepractice-golang/internal/middleware"
@@ -79,6 +80,8 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 
 	protected := api.Group("")
 	protected.Use(middleware.Auth())
+	agentHandler := handler.NewAgentHandler(llm.NewGlmClient(cfg.LLM.GlmKey))
+	protected.POST("/ocr", agentHandler.OCR)
 	protected.GET("/user/info", userHandler.Info)
 	protected.POST("/user/logout", userHandler.Logout)
 	protected.POST("/record/save", recordHandler.Save)
@@ -89,7 +92,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 	protected.GET("/word/favorites/check", wordFavoriteHandler.Check)
 	protected.GET("/word/favorites", wordFavoriteHandler.List)
 	// OpenAPI
-	r.GET("/openapi/*any", openapiui.WrapHandler(openapiui.Config{
+	r.GET("/docs/*any", openapiui.WrapHandler(openapiui.Config{
 		SpecURL:      "/docs/openapi.json",
 		SpecFilePath: "./docs/swagger.json",
 		Title:        "Onepractice API",

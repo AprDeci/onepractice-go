@@ -7,7 +7,14 @@ type Config struct {
 	Redis    RedisConfig
 	Auth     AuthConfig
 	Mail     MailConfig
+	LLM      LLMConfig
 	Cron     CronConfig `mapstructure:"cron"`
+}
+
+// LLMConfig 描述大模型服务的访问凭证。
+type LLMConfig struct {
+	GlmKey      string `mapstructure:"glm_key"`
+	DeepseekKey string `mapstructure:"deepseek_key"`
 }
 
 type ServerConfig struct {

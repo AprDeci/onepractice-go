@@ -41,6 +41,10 @@ func Load() Config {
 			From:     v.GetString("mail.from"),
 			Disabled: v.GetBool("mail.disabled"),
 		},
+		LLM: LLMConfig{
+			GlmKey:      v.GetString("llm.glm_key"),
+			DeepseekKey: v.GetString("llm.deepseek_key"),
+		},
 	}
 	// 定时任务为动态 map，逐字段读取无法覆盖，需整体反序列化。
 	_ = v.UnmarshalKey("cron", &cfg.Cron)
@@ -60,6 +64,8 @@ func bindEnvs(v *viper.Viper) {
 	bindEnv(v, "mail.api_key", "SENDFLARE_API_KEY")
 	bindEnv(v, "mail.from", "SENDFLARE_FROM")
 	bindEnv(v, "mail.disabled", "SENDFLARE_DISABLED")
+	bindEnv(v, "llm.glm_key", "GLM_API_KEY")
+	bindEnv(v, "llm.deepseek_key", "DEEPSEEK_API_KEY")
 }
 
 func bindEnv(v *viper.Viper, key string, envNames ...string) {
@@ -100,4 +106,6 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("mail.disabled", true)
 	v.SetDefault("mail.api_key", "")
 	v.SetDefault("mail.from", "")
+	v.SetDefault("llm.glm_key", "")
+	v.SetDefault("llm.deepseek_key", "")
 }
