@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"onepractice-golang/internal/model"
+	"onepractice-golang/internal/service/templates"
 	"onepractice-golang/internal/utils"
 
 	"github.com/google/uuid"
@@ -19,6 +20,8 @@ import (
 const (
 	CaptchaPurposeRegister      = "register"
 	CaptchaPurposeResetPassword = "reset_password"
+
+	captchaCodeTTL = 5 * time.Minute
 )
 
 type CaptchaService struct {
@@ -55,7 +58,15 @@ func (s *CaptchaService) SendEmailCaptcha(ctx context.Context, email, purpose st
 		return err
 	}
 
-	if err := s.mailer.Send(ctx, email, "Onepractice Verification Code", fmt.Sprintf("Verification code: %s", code)); err != nil {
+	body, err := templates.RenderCaptchaEmail(templates.CaptchaEmailData{
+		Code:          code,
+		Intro:         captchaEmailIntro(purpose),
+		ExpireMinutes: int(captchaCodeTTL / time.Minute),
+	})
+	if err != nil {
+		return err
+	}
+	if err := s.mailer.Send(ctx, email, "【OnePractice】邮箱验证码", body); err != nil {
 		return err
 	}
 
@@ -156,7 +167,7 @@ func (s *CaptchaService) storeCodeAndCooldown(ctx context.Context, email, code, 
 	}
 
 	pipe := s.redis.Pipeline()
-	pipe.Set(ctx, captchaCodeKey(email, purpose), code, 5*time.Minute)
+	pipe.Set(ctx, captchaCodeKey(email, purpose), code, captchaCodeTTL)
 	pipe.Set(ctx, captchaCooldownKey(email), "1", 60*time.Second)
 	_, err := pipe.Exec(ctx)
 	return err
