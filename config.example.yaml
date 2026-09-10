@@ -21,6 +21,20 @@ mail:
   disabled: true
 
 llm:
+  # 智谱 GLM API Key，仅用于 OCR。
   glm_key: ""
-  deepseek_key: ""
-  provider: "deepseek"
+  # 当前默认使用的 chat 模型（对应 models 的 key）。
+  default: "deepseek"
+  # chat 模型列表，可自由增删。
+  # api_key 可写在文件里，也可用环境变量覆盖：<NAME>_API_KEY，如 DEEPSEEK_API_KEY / GLM_API_KEY。
+  models:
+    deepseek:
+      base_url: "https://api.deepseek.com/v1"
+      model: "deepseek-v4-flash"
+      api_key: ""
+      temperature: 0.2
+    glm:
+      base_url: "https://open.bigmodel.cn/api/paas/v4"
+      model: "glm-4-flash"
+      api_key: ""
+      temperature: 0.2

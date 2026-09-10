@@ -9,27 +9,18 @@ import (
 	"github.com/cloudwego/eino/components/model"
 )
 
-// Provider 表示 OpenAI 兼容的大模型服务商。
-type Provider string
+// defaultTemperature 未显式配置 temperature 时使用的默认值。
+const defaultTemperature float32 = 0.2
 
-const (
-	ProviderDeepSeek Provider = "deepseek"
-	ProviderGLM      Provider = "glm"
-)
-
-// providerPreset 各服务商的接入预设，由工厂统一管理，调用方无需关心。
-type providerPreset struct {
-	baseURL     string
-	model       string
-	temperature float32
+// ModelConfig 描述一个 OpenAI 兼容 chat 模型的接入参数。
+type ModelConfig struct {
+	BaseURL     string
+	Model       string
+	APIKey      string
+	Temperature *float32
 }
 
-var providerPresets = map[Provider]providerPreset{
-	ProviderDeepSeek: {baseURL: "https://api.deepseek.com/v1", model: "deepseek-v4-flash", temperature: 0.2},
-	ProviderGLM:      {baseURL: "https://open.bigmodel.cn/api/paas/v4", model: "glm-4-flash", temperature: 0.2},
-}
-
-// ChatModelOption 在服务商预设之上对 chat model 做额外定制。
+// ChatModelOption 在模型参数之上对 chat model 做额外定制。
 type ChatModelOption func(*openai.ChatModelConfig)
 
 // WithJSONOutput 开启 JSON 输出模式（response_format=json_object）。
@@ -48,27 +39,33 @@ func WithMaxTokens(n int) ChatModelOption {
 	}
 }
 
-// NewChatModel 按服务商预设构建 OpenAI 兼容的 chat model。
-// base_url、model、temperature 均由工厂管理，调用方只需提供服务商、API Key 及可选定制。
-func NewChatModel(ctx context.Context, provider Provider, apiKey string, opts ...ChatModelOption) (model.BaseChatModel, error) {
-	preset, ok := providerPresets[provider]
-	if !ok {
-		return nil, fmt.Errorf("不支持的 LLM 服务商: %s", provider)
+// NewChatModel 根据配置构建 OpenAI 兼容的 chat model。
+// base_url、model 必填；temperature 省略时使用 0.2。
+func NewChatModel(ctx context.Context, cfg ModelConfig, opts ...ChatModelOption) (model.BaseChatModel, error) {
+	if strings.TrimSpace(cfg.BaseURL) == "" {
+		return nil, fmt.Errorf("base_url 未配置")
 	}
-	if strings.TrimSpace(apiKey) == "" {
-		return nil, fmt.Errorf("%s 的 API Key 未配置", provider)
+	if strings.TrimSpace(cfg.Model) == "" {
+		return nil, fmt.Errorf("model 未配置")
+	}
+	if strings.TrimSpace(cfg.APIKey) == "" {
+		return nil, fmt.Errorf("api_key 未配置")
 	}
 
-	temp := preset.temperature
-	cfg := &openai.ChatModelConfig{
-		BaseURL:     preset.baseURL,
-		APIKey:      apiKey,
-		Model:       preset.model,
+	temp := defaultTemperature
+	if cfg.Temperature != nil {
+		temp = *cfg.Temperature
+	}
+
+	chatCfg := &openai.ChatModelConfig{
+		BaseURL:     cfg.BaseURL,
+		APIKey:      cfg.APIKey,
+		Model:       cfg.Model,
 		Temperature: &temp,
 	}
 	for _, opt := range opts {
-		opt(cfg)
+		opt(chatCfg)
 	}
 
-	return openai.NewChatModel(ctx, cfg)
+	return openai.NewChatModel(ctx, chatCfg)
 }

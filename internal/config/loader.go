@@ -42,10 +42,19 @@ func Load() Config {
 			Disabled: v.GetBool("mail.disabled"),
 		},
 		LLM: LLMConfig{
-			GlmKey:      v.GetString("llm.glm_key"),
-			DeepseekKey: v.GetString("llm.deepseek_key"),
-			Provider:    v.GetString("llm.provider"),
+			GlmKey:  v.GetString("llm.glm_key"),
+			Default: v.GetString("llm.default"),
 		},
+	}
+	// chat 模型列表为动态 map，逐字段读取无法覆盖，需整体反序列化。
+	_ = v.UnmarshalKey("llm.models", &cfg.LLM.Models)
+	// UnmarshalKey 不识别环境变量绑定，这里对每个模型重新解析 api_key：
+	// 绑定 <NAME>_API_KEY 环境变量（如 DEEPSEEK_API_KEY / GLM_API_KEY），未设置时回退配置文件。
+	for name, model := range cfg.LLM.Models {
+		key := "llm.models." + name + ".api_key"
+		bindEnv(v, key, strings.ToUpper(strings.ReplaceAll(name, "-", "_"))+"_API_KEY")
+		model.APIKey = v.GetString(key)
+		cfg.LLM.Models[name] = model
 	}
 	// 定时任务为动态 map，逐字段读取无法覆盖，需整体反序列化。
 	_ = v.UnmarshalKey("cron", &cfg.Cron)
@@ -66,8 +75,6 @@ func bindEnvs(v *viper.Viper) {
 	bindEnv(v, "mail.from", "SENDFLARE_FROM")
 	bindEnv(v, "mail.disabled", "SENDFLARE_DISABLED")
 	bindEnv(v, "llm.glm_key", "GLM_API_KEY")
-	bindEnv(v, "llm.deepseek_key", "DEEPSEEK_API_KEY")
-	bindEnv(v, "llm.provider", "LLM_PROVIDER")
 }
 
 func bindEnv(v *viper.Viper, key string, envNames ...string) {
@@ -109,6 +116,5 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("mail.api_key", "")
 	v.SetDefault("mail.from", "")
 	v.SetDefault("llm.glm_key", "")
-	v.SetDefault("llm.deepseek_key", "")
-	v.SetDefault("llm.provider", "deepseek")
+	v.SetDefault("llm.default", "")
 }

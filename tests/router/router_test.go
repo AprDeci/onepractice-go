@@ -31,7 +31,12 @@ func newTestEngine(t *testing.T) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	initAuthManager()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	cfg := config.Config{LLM: config.LLMConfig{Provider: "deepseek", DeepseekKey: "test"}}
+	cfg := config.Config{LLM: config.LLMConfig{
+		Default: "test",
+		Models: map[string]config.LLMModelConfig{
+			"test": {BaseURL: "https://example.com/v1", Model: "test-model", APIKey: "test-key"},
+		},
+	}}
 	engine, cleanup, err := router.New(cfg, nil, nil, logger)
 	if err != nil {
 		t.Fatalf("new router: %v", err)

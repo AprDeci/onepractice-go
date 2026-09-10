@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"fmt"
 	"onepractice-golang/internal/agent"
 	"onepractice-golang/internal/agent/llm"
 	"onepractice-golang/internal/config"
@@ -63,17 +64,19 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 	}
 }
 
-// essayAPIKey 选取当前 provider 对应的 API Key。
-func essayAPIKey(cfg config.LLMConfig) string {
-	if llm.Provider(cfg.Provider) == llm.ProviderGLM {
-		return cfg.GlmKey
-	}
-	return cfg.DeepseekKey
-}
-
-// newEssayService 构建作文批改 chat model 并创建服务；key 缺失或 provider 非法时返回错误。
+// newEssayService 依据 cfg.LLM.Default 选定模型并创建作文批改服务。
 func newEssayService(cfg config.Config, redisClient *redis.Client) (*service.EssayService, error) {
-	cm, err := agent.NewEssayChatModel(context.Background(), llm.Provider(cfg.LLM.Provider), essayAPIKey(cfg.LLM))
+	modelCfg, ok := cfg.LLM.Models[cfg.LLM.Default]
+	if !ok {
+		return nil, fmt.Errorf("llm.default %q 未在 llm.models 中定义", cfg.LLM.Default)
+	}
+
+	cm, err := agent.NewEssayChatModel(context.Background(), llm.ModelConfig{
+		BaseURL:     modelCfg.BaseURL,
+		Model:       modelCfg.Model,
+		APIKey:      modelCfg.APIKey,
+		Temperature: modelCfg.Temperature,
+	})
 	if err != nil {
 		return nil, err
 	}

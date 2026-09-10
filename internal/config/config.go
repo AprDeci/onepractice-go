@@ -11,11 +11,20 @@ type Config struct {
 	Cron     CronConfig `mapstructure:"cron"`
 }
 
-// LLMConfig 描述大模型服务的访问凭证与服务商选择。
+// LLMConfig 描述 chat 模型列表与默认使用的模型；GlmKey 仅用于 OCR。
 type LLMConfig struct {
-	GlmKey      string `mapstructure:"glm_key"`
-	DeepseekKey string `mapstructure:"deepseek_key"`
-	Provider    string `mapstructure:"provider"`
+	// GlmKey 供 OCR（layout_parsing）使用，与 chat 模型列表相互独立。
+	GlmKey  string                    `mapstructure:"glm_key"`
+	Default string                    `mapstructure:"default"`
+	Models  map[string]LLMModelConfig `mapstructure:"models"`
+}
+
+// LLMModelConfig 描述一个 OpenAI 兼容 chat 模型的接入参数。
+type LLMModelConfig struct {
+	BaseURL     string   `mapstructure:"base_url"`
+	Model       string   `mapstructure:"model"`
+	APIKey      string   `mapstructure:"api_key"`
+	Temperature *float32 `mapstructure:"temperature"`
 }
 
 type ServerConfig struct {
