@@ -23,10 +23,12 @@ func NewEssayHandler(s *service.EssayService) *EssayHandler {
 
 // CreateTask 创建作文批改任务。
 // @Summary 创建作文批改任务
+// @Description 提交作文题目与正文，创建异步批改任务，返回 taskId 与初始状态。
 // @Tags essay
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
+// @Param request body dto.CreateEssayTaskRequest true "作文批改任务参数"
 // @Success 201 {object} response.Body
 // @Router /api/v1/essay/tasks [post]
 func (h *EssayHandler) CreateTask(c *gin.Context) {
@@ -60,9 +62,11 @@ func (h *EssayHandler) CreateTask(c *gin.Context) {
 
 // GetTask 查询作文批改任务。
 // @Summary 查询作文批改任务
+// @Description 按 taskId 查询当前登录用户的作文批改任务状态与结果。
 // @Tags essay
 // @Produce json
 // @Security ApiKeyAuth
+// @Param taskId path string true "任务 ID"
 // @Success 200 {object} response.Body
 // @Router /api/v1/essay/tasks/{taskId} [get]
 func (h *EssayHandler) GetTask(c *gin.Context) {
