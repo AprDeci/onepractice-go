@@ -11,10 +11,11 @@ type Config struct {
 	Cron     CronConfig `mapstructure:"cron"`
 }
 
-// LLMConfig 描述大模型服务的访问凭证。
+// LLMConfig 描述大模型服务的访问凭证与服务商选择。
 type LLMConfig struct {
 	GlmKey      string `mapstructure:"glm_key"`
 	DeepseekKey string `mapstructure:"deepseek_key"`
+	Provider    string `mapstructure:"provider"`
 }
 
 type ServerConfig struct {
