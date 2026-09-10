@@ -11,3 +11,5 @@ var ErrInvalidQuestionType = errors.New("invalid question type")
 var ErrInvalidPracticeUnitCount = errors.New("invalid practice unit count")
 
 var ErrPracticeQuestionsNotFound = errors.New("no practice questions found")
+
+var ErrTaskNotFound = errors.New("task not found")

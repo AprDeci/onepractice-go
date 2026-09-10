@@ -1,0 +1,177 @@
+package service
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
+	"time"
+
+	"onepractice-golang/internal/agent"
+	"onepractice-golang/internal/common/message_queue"
+	"onepractice-golang/internal/dto"
+
+	"github.com/cloudwego/eino/components/model"
+	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
+)
+
+const (
+	essayTaskTTL = 24 * time.Hour
+	// EssayTopic 是作文批改任务队列的 topic。
+	EssayTopic          = "onepractice:essay:grade"
+	essayProcessTimeout = 120 * time.Second
+	essayStaleAfter     = 10 * time.Minute
+	essayTaskKeyPrefix  = "onepractice:essay:task:"
+)
+
+// EssayService 负责作文批改任务的创建、异步执行与查询。
+type EssayService struct {
+	redis *redis.Client
+	model model.BaseChatModel
+	queue *message_queue.Queue
+}
+
+// NewEssayService 创建作文批改服务。redis 或 model 为 nil 时仅创建空壳，
+// 相关方法会返回 ErrRedisDisabled。
+func NewEssayService(redisClient *redis.Client, cm model.BaseChatModel) *EssayService {
+	return &EssayService{redis: redisClient, model: cm}
+}
+
+// SetQueue 注入用于投递批改任务的队列。
+func (s *EssayService) SetQueue(queue *message_queue.Queue) {
+	s.queue = queue
+}
+
+type essayJob struct {
+	TaskID string `json:"taskId"`
+	UserID int64  `json:"userId"`
+}
+
+// CreateTask 落库任务并投递到队列，返回任务 ID。
+func (s *EssayService) CreateTask(ctx context.Context, userID int64, input agent.Input) (string, error) {
+	if s == nil || s.redis == nil {
+		return "", ErrRedisDisabled
+	}
+
+	taskID := strings.ReplaceAll(uuid.NewString(), "-", "")
+	now := time.Now()
+	task := dto.EssayTask{
+		ID:        taskID,
+		UserID:    userID,
+		Status:    dto.EssayTaskPending,
+		Input:     input,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+	if err := s.saveTask(ctx, &task); err != nil {
+		return "", err
+	}
+	if s.queue != nil {
+		if _, err := s.queue.Publish(message_queue.NewMessage("", now, essayJob{TaskID: taskID, UserID: userID})); err != nil {
+			return "", err
+		}
+	}
+	return taskID, nil
+}
+
+// GetTask 查询任务，校验归属，并对长时间停留在 processing 的任务做超时兜底。
+func (s *EssayService) GetTask(ctx context.Context, userID int64, taskID string) (*dto.EssayTask, error) {
+	if s == nil || s.redis == nil {
+		return nil, ErrRedisDisabled
+	}
+
+	task, err := s.loadTask(ctx, taskID)
+	if err != nil {
+		return nil, err
+	}
+	if task == nil || task.UserID != userID {
+		return nil, ErrTaskNotFound
+	}
+
+	if task.Status == dto.EssayTaskProcessing && time.Since(task.UpdatedAt) > essayStaleAfter {
+		task.Status = dto.EssayTaskFailed
+		task.Error = "处理超时"
+		task.UpdatedAt = time.Now()
+		if err := s.saveTask(ctx, task); err != nil {
+			return nil, err
+		}
+	}
+	return task, nil
+}
+
+// Handle 消费批改任务消息：加载任务、调用模型批改并回写结果。
+func (s *EssayService) Handle(ctx context.Context, msg message_queue.Message) error {
+	data, err := json.Marshal(msg.Body)
+	if err != nil {
+		return fmt.Errorf("marshal essay job: %w", err)
+	}
+	var job essayJob
+	if err := json.Unmarshal(data, &job); err != nil {
+		return fmt.Errorf("unmarshal essay job: %w", err)
+	}
+	if job.TaskID == "" {
+		return nil
+	}
+
+	task, err := s.loadTask(ctx, job.TaskID)
+	if err != nil {
+		return err
+	}
+	if task == nil {
+		return nil
+	}
+	if task.Status == dto.EssayTaskSucceeded || task.Status == dto.EssayTaskFailed {
+		return nil
+	}
+
+	task.Status = dto.EssayTaskProcessing
+	task.UpdatedAt = time.Now()
+	if err := s.saveTask(ctx, task); err != nil {
+		return err
+	}
+
+	procCtx, cancel := context.WithTimeout(ctx, essayProcessTimeout)
+	defer cancel()
+	out, scoreErr := agent.EssayScore(procCtx, s.model, task.Input)
+
+	task.UpdatedAt = time.Now()
+	if scoreErr != nil {
+		task.Status = dto.EssayTaskFailed
+		task.Error = scoreErr.Error()
+		_ = s.saveTask(ctx, task)
+		return nil
+	}
+
+	task.Status = dto.EssayTaskSucceeded
+	task.Result = &out
+	if err := s.saveTask(ctx, task); err != nil {
+		return err
+	}
+	return nil
+}
+
+// 保存任务
+func (s *EssayService) saveTask(ctx context.Context, task *dto.EssayTask) error {
+	payload, err := json.Marshal(task)
+	if err != nil {
+		return err
+	}
+	return s.redis.Set(ctx, essayTaskKeyPrefix+task.ID, payload, essayTaskTTL).Err()
+}
+
+func (s *EssayService) loadTask(ctx context.Context, taskID string) (*dto.EssayTask, error) {
+	payload, err := s.redis.Get(ctx, essayTaskKeyPrefix+taskID).Bytes()
+	if errors.Is(err, redis.Nil) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var task dto.EssayTask
+	if err := json.Unmarshal(payload, &task); err != nil {
+		return nil, err
+	}
+	return &task, nil
+}

@@ -25,7 +25,7 @@ type providerPreset struct {
 }
 
 var providerPresets = map[Provider]providerPreset{
-	ProviderDeepSeek: {baseURL: "https://api.deepseek.com/v1", model: "deepseek-chat", temperature: 0.2},
+	ProviderDeepSeek: {baseURL: "https://api.deepseek.com/v1", model: "deepseek-v4-flash", temperature: 0.2},
 	ProviderGLM:      {baseURL: "https://open.bigmodel.cn/api/paas/v4", model: "glm-4-flash", temperature: 0.2},
 }
 

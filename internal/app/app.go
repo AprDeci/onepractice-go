@@ -16,7 +16,6 @@ import (
 
 	"onepractice-golang/internal/auth"
 	"onepractice-golang/internal/common/logger"
-	"onepractice-golang/internal/common/mail"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/cron"
 	"onepractice-golang/internal/router"
@@ -35,7 +34,7 @@ type App struct {
 	Redis     *redis.Client
 	Logger    *slog.Logger
 	logCloser io.Closer
-	Mail      *mail.Module
+	cleanup   func()
 	Cron      *cron.Manager
 
 	lifecycleMu sync.Mutex
@@ -74,11 +73,25 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 	slog.SetDefault(logger)
 
 	auth.Init(cfg.Auth, redisClient)
-	mailModule := mail.NewModule(context.Background(), cfg.Mail, redisClient)
-	engine := router.New(cfg, database, redisClient, mailModule.Sender, logger)
+
+	engine, cleanup, err := router.New(cfg, database, redisClient, logger)
+	if err != nil {
+		if logCloser != nil {
+			_ = logCloser.Close()
+		}
+		_ = closeDatabase(database)
+		_ = closeRedis(redisClient)
+		return nil, err
+	}
 
 	cronManager := cron.NewManager(cfg.Cron, logger)
 	if err := cron.Register(cronManager, logger); err != nil {
+		cleanup()
+		if logCloser != nil {
+			_ = logCloser.Close()
+		}
+		_ = closeDatabase(database)
+		_ = closeRedis(redisClient)
 		return nil, fmt.Errorf("注册定时任务失败: %w", err)
 	}
 
@@ -92,7 +105,7 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 		Redis:     redisClient,
 		Logger:    logger,
 		logCloser: logCloser,
-		Mail:      mailModule,
+		cleanup:   cleanup,
 		Cron:      cronManager,
 	}, nil
 }
@@ -204,8 +217,8 @@ func (a *App) Close() error {
 		a.lifecycleMu.Unlock()
 
 		var errs []error
-		if a.Mail != nil {
-			a.Mail.Close()
+		if a.cleanup != nil {
+			a.cleanup()
 		}
 		if err := closeDatabase(a.DB); err != nil {
 			errs = append(errs, fmt.Errorf("close database: %w", err))

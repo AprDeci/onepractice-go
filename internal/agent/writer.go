@@ -26,7 +26,7 @@ const essayMaxOutputTokens = 20000
 // NewEssayChatModel 构建作文批改使用的 chat model：开启 JSON 输出模式并限制最大 token 数，
 // 减少 markdown 包裹、多余解释与长 JSON 截断，配合 EssayScore 的重试兜底。
 func NewEssayChatModel(ctx context.Context, provider llm.Provider, apiKey string) (model.BaseChatModel, error) {
-	return llm.NewChatModel(ctx, provider, apiKey, llm.WithJSONOutput(), llm.WithMaxTokens(essayMaxOutputTokens))
+	return llm.NewChatModel(ctx, provider, apiKey)
 }
 
 // parseRetryPrompt 解析失败后追加进对话的纠正指令。

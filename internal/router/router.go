@@ -1,7 +1,11 @@
 package router
 
 import (
+	"context"
+	"fmt"
 	"log/slog"
+	"onepractice-golang/internal/common/mail"
+	"onepractice-golang/internal/common/message_queue"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/middleware"
 	"onepractice-golang/internal/service"
@@ -14,7 +18,39 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSender service.MailSender, logger *slog.Logger) *gin.Engine {
+// New 组装依赖并返回 HTTP 引擎，以及用于关闭后台模块（mail、essay 等）的 cleanup 函数。
+func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger *slog.Logger) (*gin.Engine, func(), error) {
+	queueCtx, cancelQueues := context.WithCancel(context.Background())
+
+	mailModule := mail.NewModule(cfg.Mail)
+	if redisClient != nil {
+		mailQueue := message_queue.NewQueue(queueCtx, redisClient,
+			message_queue.WithTopic(mail.Topic),
+			message_queue.WithHandler(mail.Consume(mailModule.Sender)),
+		)
+		mailQueue.Start()
+		mailModule.Sender = mail.NewQueueSender(mailQueue)
+	}
+
+	essayService, err := newEssayService(cfg, redisClient)
+	if err != nil {
+		cancelQueues()
+		return nil, nil, fmt.Errorf("初始化作文批改服务失败: %w", err)
+	}
+	if redisClient != nil {
+		essayQueue := message_queue.NewQueue(queueCtx, redisClient,
+			message_queue.WithTopic(service.EssayTopic),
+			message_queue.WithWorkers(5),
+			message_queue.WithHandler(essayService.Handle),
+		)
+		essayQueue.Start()
+		essayService.SetQueue(essayQueue)
+	}
+
+	cleanup := func() {
+		cancelQueues()
+	}
+
 	r := gin.New()
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -25,7 +61,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 	}))
 	r.Use(middleware.RequestID(), middleware.AccessLog(logger), middleware.Recovery(logger))
 
-	deps := newDeps(cfg, database, redisClient, mailSender)
+	deps := newDeps(cfg, database, redisClient, mailModule.Sender, essayService)
 	registerHealthRoutes(r, deps.LegacyHealth)
 	registerDocsRoutes(r)
 	plugin := sagin.NewPlugin(sagin.GetManager())
@@ -43,6 +79,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 	registerUserProtectedRoutes(v1Protected, deps.V1User)
 	registerRecordRoutes(v1Protected, deps.V1Record)
 	registerWordFavoriteRoutes(v1Protected, deps.V1WordFavorite)
+	registerEssayRoutes(v1Protected, deps.V1Essay)
 
 	legacy := r.Group("/api")
 	legacy.Use(middleware.TimeoutMiddleware(5 * time.Second))
@@ -54,5 +91,5 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, mailSe
 	registerLegacyProtectedRoutes(legacyProtected, deps)
 	registerAgentRoutes(legacyProtected, deps.LegacyAgent)
 
-	return r
+	return r, cleanup, nil
 }

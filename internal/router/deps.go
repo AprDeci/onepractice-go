@@ -1,6 +1,8 @@
 package router
 
 import (
+	"context"
+	"onepractice-golang/internal/agent"
 	"onepractice-golang/internal/agent/llm"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/handler"
@@ -28,9 +30,10 @@ type Deps struct {
 	V1Dictionary       *handlerv1.DictionaryHandler
 	V1Record           *handlerv1.RecordHandler
 	V1WordFavorite     *handlerv1.WordFavoriteHandler
+	V1Essay            *handlerv1.EssayHandler
 }
 
-func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSender service.MailSender) Deps {
+func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSender service.MailSender, essayService *service.EssayService) Deps {
 	captchaSvc := service.NewCaptchaServiceWithSender(db, redisClient, mailSender)
 	paperSvc := service.NewPaperService(db)
 	userSvc := service.NewUserService(db, captchaSvc)
@@ -56,5 +59,23 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 		V1Dictionary:       handlerv1.NewDictionaryHandler(dictionarySvc),
 		V1Record:           handlerv1.NewRecordHandler(recordSvc),
 		V1WordFavorite:     handlerv1.NewWordFavoriteHandler(favoriteSvc),
+		V1Essay:            handlerv1.NewEssayHandler(essayService),
 	}
+}
+
+// essayAPIKey 选取当前 provider 对应的 API Key。
+func essayAPIKey(cfg config.LLMConfig) string {
+	if llm.Provider(cfg.Provider) == llm.ProviderGLM {
+		return cfg.GlmKey
+	}
+	return cfg.DeepseekKey
+}
+
+// newEssayService 构建作文批改 chat model 并创建服务；key 缺失或 provider 非法时返回错误。
+func newEssayService(cfg config.Config, redisClient *redis.Client) (*service.EssayService, error) {
+	cm, err := agent.NewEssayChatModel(context.Background(), llm.Provider(cfg.LLM.Provider), essayAPIKey(cfg.LLM))
+	if err != nil {
+		return nil, err
+	}
+	return service.NewEssayService(redisClient, cm), nil
 }

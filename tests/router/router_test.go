@@ -1,4 +1,4 @@
-package router
+package router_test
 
 import (
 	"io"
@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"onepractice-golang/internal/config"
+	"onepractice-golang/internal/router"
 
 	"github.com/gin-gonic/gin"
 	sagin "github.com/sa-tokens/sa-token-go/integrations/gin"
@@ -30,7 +31,13 @@ func newTestEngine(t *testing.T) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	initAuthManager()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	return New(config.Config{}, nil, nil, nil, logger)
+	cfg := config.Config{LLM: config.LLMConfig{Provider: "deepseek", DeepseekKey: "test"}}
+	engine, cleanup, err := router.New(cfg, nil, nil, logger)
+	if err != nil {
+		t.Fatalf("new router: %v", err)
+	}
+	t.Cleanup(cleanup)
+	return engine
 }
 
 func doRequest(t *testing.T, r *gin.Engine, method, path string) *httptest.ResponseRecorder {
@@ -88,6 +95,8 @@ func TestV1ProtectedRoutesRequireAuth(t *testing.T) {
 		{http.MethodPost, "/api/v1/users/me/favorite-words"},
 		{http.MethodGet, "/api/v1/users/me/favorite-words/1"},
 		{http.MethodDelete, "/api/v1/users/me/favorite-words/1"},
+		{http.MethodPost, "/api/v1/essay/tasks"},
+		{http.MethodGet, "/api/v1/essay/tasks/abc"},
 	}
 	for _, tc := range cases {
 		w := doRequest(t, r, tc.method, tc.path)
