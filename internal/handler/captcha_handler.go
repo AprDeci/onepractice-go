@@ -53,7 +53,7 @@ func (h *CaptchaHandler) Email(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body dto.EmailCaptchaRequest true "邮箱验证码参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.ResetPasswordTokenResponse}
 // @Router /api/captcha/email/verify [post]
 func (h *CaptchaHandler) VerifyEmail(c *gin.Context) {
 	var req dto.EmailCaptchaRequest

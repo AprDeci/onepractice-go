@@ -25,7 +25,7 @@ func NewUserHandler(svc *service.UserService) *UserHandler { return &UserHandler
 // @Accept json
 // @Produce json
 // @Param request body apiv1.RegisterRequest true "注册参数"
-// @Success 201 {object} response.Body
+// @Success 201 {object} response.Body{data=apiv1.RegisterResponse}
 // @Router /api/v1/auth/registrations [post]
 func (h *UserHandler) Register(c *gin.Context) {
 	var input dtoV1.RegisterRequest
@@ -60,7 +60,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body apiv1.LoginRequest true "登录参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.LoginResponse}
 // @Router /api/v1/auth/sessions [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	var input dtoV1.LoginRequest
@@ -110,7 +110,7 @@ func (h *UserHandler) Logout(c *gin.Context) {
 // @Description 根据 token 获取当前登录用户信息。
 // @Tags user
 // @Security ApiKeyAuth
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.UserInfoResponse}
 // @Router /api/v1/users/me [get]
 func (h *UserHandler) Info(c *gin.Context) {
 	userID, ok := currentUserID(c)

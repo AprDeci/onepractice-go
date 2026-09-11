@@ -22,13 +22,13 @@ func NewQuestionHandler(svc *service.QuestionService) *QuestionHandler {
 
 // List 按试卷获取题目，支持题型过滤与按 Part 分组。
 // @Summary 按试卷获取题目
-// @Description 返回指定试卷下的全部题目，支持题型过滤与按 Part 分组。
+// @Description 返回指定试卷下的全部题目；默认 data 为题目数组，传 groupBy=part 时 data 为 ExamQuestion 分组结构。
 // @Tags question
 // @Produce json
 // @Param paperId path int true "试卷 ID"
 // @Param type query string false "题型"
 // @Param groupBy query string false "传 part 按 Part 分组"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]model.Question}
 // @Router /api/v1/papers/{paperId}/questions [get]
 func (h *QuestionHandler) List(c *gin.Context) {
 	paperID, ok := pathInt(c, "paperId")
@@ -71,7 +71,7 @@ func (h *QuestionHandler) List(c *gin.Context) {
 // @Tags question
 // @Produce json
 // @Param paperId path int true "试卷 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.AnswersResponse}
 // @Router /api/v1/papers/{paperId}/answers [get]
 func (h *QuestionHandler) Answers(c *gin.Context) {
 	paperID, ok := pathInt(c, "paperId")
@@ -94,7 +94,7 @@ func (h *QuestionHandler) Answers(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body apiv1.PracticeQuestionRequest true "专项训练参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.PracticeQuestionResponse}
 // @Router /api/v1/questions/practice [post]
 func (h *QuestionHandler) Practice(c *gin.Context) {
 	var req dtoV1.PracticeQuestionRequest

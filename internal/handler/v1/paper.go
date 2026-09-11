@@ -18,7 +18,7 @@ func NewPaperHandler(svc *service.PaperService) *PaperHandler { return &PaperHan
 
 // List 获取试卷列表。
 // @Summary 获取试卷列表
-// @Description 分页查询试卷；include=rating 时返回含评分与题量的数据。
+// @Description 分页查询试卷；默认 items 为 Paper。传 include=rating 时 items 为 PaperWithRating（含评分与题量）。
 // @Tags paper
 // @Produce json
 // @Param page query int false "页码"
@@ -26,7 +26,7 @@ func NewPaperHandler(svc *service.PaperService) *PaperHandler { return &PaperHan
 // @Param type query string false "试卷类型"
 // @Param year query int false "年份"
 // @Param include query string false "传 rating 返回评分信息"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.PaperPage}
 // @Router /api/v1/papers [get]
 func (h *PaperHandler) List(c *gin.Context) {
 	var q dtoV1.PaperQuery
@@ -65,7 +65,7 @@ func (h *PaperHandler) List(c *gin.Context) {
 // @Tags paper
 // @Produce json
 // @Param paperId path int true "试卷 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.PaperIntro}
 // @Router /api/v1/papers/{paperId}/intro [get]
 func (h *PaperHandler) Intro(c *gin.Context) {
 	paperID, ok := pathInt(c, "paperId")
@@ -85,7 +85,7 @@ func (h *PaperHandler) Intro(c *gin.Context) {
 // @Description 返回全部可用的试卷类型。
 // @Tags paper
 // @Produce json
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]string}
 // @Router /api/v1/paper-types [get]
 func (h *PaperHandler) Types(c *gin.Context) {
 	types, err := h.service.Types()

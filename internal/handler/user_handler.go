@@ -28,7 +28,7 @@ func NewUserHandler(service *service.UserService) *UserHandler {
 // @Accept json
 // @Produce json
 // @Param request body dto.RegisterRequest true "注册参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.RegisterResponse}
 // @Router /api/user/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
@@ -61,7 +61,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body dto.LoginRequest true "登录参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.LoginResponse}
 // @Router /api/user/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
@@ -93,7 +93,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Tags user
 // @Produce json
 // @Security ApiKeyAuth
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.UserInfoResponse}
 // @Router /api/user/info [get]
 func (h *UserHandler) Info(c *gin.Context) {
 	userID, ok := loginID(c)

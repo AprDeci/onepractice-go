@@ -5,7 +5,3 @@ type EmailCaptchaRequest struct {
 	Code    string `json:"code" binding:"required"`
 	Purpose string `json:"purpose"`
 }
-
-type ResetPasswordTokenResponse struct {
-	ResetToken string `json:"resetToken"`
-}

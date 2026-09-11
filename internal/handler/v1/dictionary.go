@@ -29,7 +29,7 @@ func NewDictionaryHandler(svc *service.DictionaryService) *DictionaryHandler {
 // @Param spelling query string true "拼写"
 // @Param exact query bool false "是否精确匹配"
 // @Param limit query int false "返回数量"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.DictionaryLookupResult}
 // @Router /api/v1/dictionary/definitions [get]
 func (h *DictionaryHandler) Lookup(c *gin.Context) {
 	var q dtoV1.DictionaryLookupQuery
@@ -63,7 +63,7 @@ func (h *DictionaryHandler) Lookup(c *gin.Context) {
 // @Param maxFrequency query number false "最大词频"
 // @Param page query int false "页码"
 // @Param pageSize query int false "每页大小"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.DictionaryWordPage}
 // @Router /api/v1/dictionary/words [get]
 func (h *DictionaryHandler) ListWords(c *gin.Context) {
 	var q dtoV1.DictionaryWordListQuery
@@ -102,7 +102,7 @@ func (h *DictionaryHandler) ListWords(c *gin.Context) {
 // @Tags dictionary
 // @Produce json
 // @Param wordId path int true "单词 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.DictionaryWordDetail}
 // @Router /api/v1/dictionary/words/{wordId} [get]
 func (h *DictionaryHandler) GetWord(c *gin.Context) {
 	wordID, ok := pathUint(c, "wordId")
@@ -128,7 +128,7 @@ func (h *DictionaryHandler) GetWord(c *gin.Context) {
 // @Tags dictionary
 // @Produce json
 // @Param spelling path string true "拼写"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.DictionaryWordDetail}
 // @Router /api/v1/dictionary/words/by-spelling/{spelling} [get]
 func (h *DictionaryHandler) GetWordBySpelling(c *gin.Context) {
 	result, err := h.service.GetWordBySpelling(c.Param("spelling"))
@@ -152,7 +152,7 @@ func (h *DictionaryHandler) GetWordBySpelling(c *gin.Context) {
 // @Param status query int false "状态"
 // @Param page query int false "页码"
 // @Param pageSize query int false "每页大小"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.DictionaryBookPage}
 // @Router /api/v1/dictionary/books [get]
 func (h *DictionaryHandler) ListBooks(c *gin.Context) {
 	var q dtoV1.DictionaryBookListQuery
@@ -190,7 +190,7 @@ func (h *DictionaryHandler) ListBooks(c *gin.Context) {
 // @Param keyword query string false "关键词"
 // @Param page query int false "页码"
 // @Param pageSize query int false "每页大小"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.DictionaryWordPage}
 // @Router /api/v1/dictionary/books/{bookId}/words [get]
 func (h *DictionaryHandler) ListBookWords(c *gin.Context) {
 	bookID, ok := pathUint(c, "bookId")

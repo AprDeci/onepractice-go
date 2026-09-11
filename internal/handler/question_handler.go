@@ -26,7 +26,7 @@ func NewQuestionHandler(service *service.QuestionService) *QuestionHandler {
 // @Tags question
 // @Produce json
 // @Param id query int true "试卷 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]model.Question}
 // @Router /api/question/getById [get]
 func (h *QuestionHandler) ByPaperID(c *gin.Context) {
 	id, ok := queryInt(c, "id")
@@ -58,7 +58,7 @@ func (h *QuestionHandler) ByPaperID(c *gin.Context) {
 // @Produce json
 // @Param id query int true "试卷 ID"
 // @Param type query string true "题型"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]model.Question}
 // @Router /api/question/getByType [get]
 func (h *QuestionHandler) ByPaperIDAndType(c *gin.Context) {
 	id, ok := queryInt(c, "id")
@@ -89,7 +89,7 @@ func (h *QuestionHandler) ByPaperIDAndType(c *gin.Context) {
 // @Tags question
 // @Produce json
 // @Param id query int true "试卷 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.ExamQuestion}
 // @Router /api/question/getAllByIdSplitByPart [get]
 func (h *QuestionHandler) SplitByPart(c *gin.Context) {
 	id, ok := queryInt(c, "id")
@@ -120,7 +120,7 @@ func (h *QuestionHandler) SplitByPart(c *gin.Context) {
 // @Tags question
 // @Produce json
 // @Param id query int true "试卷 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.AnswersResponse}
 // @Router /api/question/getAnswersByPaperId [get]
 func (h *QuestionHandler) Answers(c *gin.Context) {
 	id, ok := queryInt(c, "id")
@@ -152,7 +152,7 @@ func (h *QuestionHandler) Answers(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body dto.PracticeQuestionRequest true "专项训练参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.PracticeQuestionResponse}
 // @Router /api/question/practice [post]
 func (h *QuestionHandler) Practice(c *gin.Context) {
 	var req dto.PracticeQuestionRequest

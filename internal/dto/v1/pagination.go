@@ -1,12 +1,5 @@
 package apiv1
 
-type Page[T any] struct {
-	Items    []T   `json:"items"`
-	Total    int64 `json:"total"`
-	Page     int   `json:"page"`
-	PageSize int   `json:"pageSize"`
-}
-
 type PageQuery struct {
 	Page     int `form:"page" json:"page"`
 	PageSize int `form:"pageSize" json:"pageSize"`

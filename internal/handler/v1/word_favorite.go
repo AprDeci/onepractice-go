@@ -28,7 +28,7 @@ func NewWordFavoriteHandler(svc *service.WordFavoriteService) *WordFavoriteHandl
 // @Param keyword query string false "关键词"
 // @Param page query int false "页码"
 // @Param pageSize query int false "每页大小"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.FavoriteWordPage}
 // @Router /api/v1/users/me/favorite-words [get]
 func (h *WordFavoriteHandler) List(c *gin.Context) {
 	userID, ok := currentUserID(c)
@@ -61,7 +61,7 @@ func (h *WordFavoriteHandler) List(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body apiv1.FavoriteWordRequest true "收藏参数"
-// @Success 201 {object} response.Body
+// @Success 201 {object} response.Body{data=dto.WordFavoriteRequest}
 // @Router /api/v1/users/me/favorite-words [post]
 func (h *WordFavoriteHandler) Add(c *gin.Context) {
 	userID, ok := currentUserID(c)
@@ -88,7 +88,7 @@ func (h *WordFavoriteHandler) Add(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Produce json
 // @Param wordId path int true "单词 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.FavoriteStatusResponse}
 // @Router /api/v1/users/me/favorite-words/{wordId} [get]
 func (h *WordFavoriteHandler) Check(c *gin.Context) {
 	userID, ok := currentUserID(c)

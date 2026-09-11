@@ -7,6 +7,7 @@ import (
 	"onepractice-golang/internal/common/apperror"
 	"onepractice-golang/internal/common/response"
 	"onepractice-golang/internal/dto"
+	dtoV1 "onepractice-golang/internal/dto/v1"
 	"onepractice-golang/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +30,7 @@ func NewEssayHandler(s *service.EssayService) *EssayHandler {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param request body dto.CreateEssayTaskRequest true "作文批改任务参数"
-// @Success 201 {object} response.Body
+// @Success 201 {object} response.Body{data=apiv1.EssayTaskCreatedResponse}
 // @Router /api/v1/essay/tasks [post]
 func (h *EssayHandler) CreateTask(c *gin.Context) {
 	userID, ok := currentUserID(c)
@@ -57,7 +58,7 @@ func (h *EssayHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
-	response.Created(c, gin.H{"taskId": taskID, "status": dto.EssayTaskPending})
+	response.Created(c, dtoV1.EssayTaskCreatedResponse{TaskID: taskID, Status: dto.EssayTaskPending})
 }
 
 // GetTask 查询作文批改任务。
@@ -67,7 +68,7 @@ func (h *EssayHandler) CreateTask(c *gin.Context) {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param taskId path string true "任务 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.EssayTask}
 // @Router /api/v1/essay/tasks/{taskId} [get]
 func (h *EssayHandler) GetTask(c *gin.Context) {
 	userID, ok := currentUserID(c)
@@ -95,7 +96,7 @@ func (h *EssayHandler) GetTask(c *gin.Context) {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param recordId path string true "答题记录 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]dto.EssayResultResponse}
 // @Router /api/v1/essay/records/{recordId}/results [get]
 func (h *EssayHandler) GetResultsByRecord(c *gin.Context) {
 	userID, ok := currentUserID(c)

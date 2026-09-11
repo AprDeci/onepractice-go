@@ -28,7 +28,7 @@ func NewRecordHandler(service *service.RecordService) *RecordHandler {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param request body dto.RecordRequest true "答题记录参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=string}
 // @Router /api/record/save [post]
 func (h *RecordHandler) Save(c *gin.Context) {
 	userID, ok := loginID(c)
@@ -66,7 +66,7 @@ func (h *RecordHandler) Save(c *gin.Context) {
 // @Param days query int false "最近天数"
 // @Param pageNum query int false "页码"
 // @Param pageSize query int false "每页大小"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]dto.UserExamRecord}
 // @Router /api/record/list [get]
 func (h *RecordHandler) List(c *gin.Context) {
 	userID, ok := loginID(c)

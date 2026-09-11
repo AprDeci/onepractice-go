@@ -22,26 +22,6 @@ type UpdateRecordRequest struct {
 	HasSpendTime int64  `json:"hasSpendTime"`
 }
 
-type RecordCreatedResponse struct {
-	RecordID string `json:"recordId"`
-}
-
-type UserExamRecord struct {
-	RecordID     string `json:"recordId"`
-	UserID       int64  `json:"userId"`
-	PaperID      int    `json:"paperId"`
-	PaperType    string `json:"paperType"`
-	PaperName    string `json:"paperName"`
-	Type         string `json:"type"`
-	IsFinished   int    `json:"isFinished"`
-	Answers      string `json:"answers"`
-	TimeSpend    int    `json:"timeSpend"`
-	Score        int    `json:"score"`
-	TotalScore   int    `json:"totalScore"`
-	Timestamp    int64  `json:"timestamp"`
-	HasSpendTime int64  `json:"hasSpendTime"`
-}
-
 type RecordListQuery struct {
 	PageQuery
 	Days int `form:"days" json:"days"`

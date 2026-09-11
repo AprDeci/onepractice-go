@@ -29,7 +29,7 @@ func NewAgentHandler(ocr *llm.GlmClient) *AgentHandler {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param image formData file true "图片文件，支持 jpg/jpeg/png/webp，单张不超过 10MB"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=llm.OcrResult}
 // @Failure 400 {object} response.Body
 // @Failure 500 {object} response.Body
 // @Router /api/ocr [post]

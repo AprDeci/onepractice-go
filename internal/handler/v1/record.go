@@ -28,7 +28,7 @@ func recordRequest(recordID string, req dtoV1.CreateRecordRequest) dto.RecordReq
 // @Accept json
 // @Produce json
 // @Param request body apiv1.CreateRecordRequest true "答题记录参数"
-// @Success 201 {object} response.Body
+// @Success 201 {object} response.Body{data=apiv1.RecordCreatedResponse}
 // @Router /api/v1/records [post]
 func (h *RecordHandler) Create(c *gin.Context) {
 	userID, ok := currentUserID(c)
@@ -57,7 +57,7 @@ func (h *RecordHandler) Create(c *gin.Context) {
 // @Param days query int false "最近天数"
 // @Param page query int false "页码"
 // @Param pageSize query int false "每页大小"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.RecordPage}
 // @Router /api/v1/records [get]
 func (h *RecordHandler) List(c *gin.Context) {
 	userID, ok := currentUserID(c)

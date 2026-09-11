@@ -25,7 +25,7 @@ func NewPaperHandler(service *service.PaperService) *PaperHandler {
 // @Description 返回全部试卷列表。
 // @Tags paper
 // @Produce json
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]model.Paper}
 // @Router /api/paper/all [get]
 func (h *PaperHandler) All(c *gin.Context) {
 	papers, err := h.service.All()
@@ -48,7 +48,7 @@ func (h *PaperHandler) All(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body dto.PaperQueryRequest true "查询条件"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.PaperPage}
 // @Router /api/paper/getPaperwithQuerys [post]
 func (h *PaperHandler) Page(c *gin.Context) {
 	var req dto.PaperQueryRequest
@@ -79,7 +79,7 @@ func (h *PaperHandler) Page(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body dto.PaperQueryRequest true "查询条件"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.PaperWithRatingPage}
 // @Router /api/paper/getPaperandRatingWithQuerys [post]
 func (h *PaperHandler) PageWithRating(c *gin.Context) {
 	var req dto.PaperQueryRequest
@@ -109,7 +109,7 @@ func (h *PaperHandler) PageWithRating(c *gin.Context) {
 // @Tags paper
 // @Produce json
 // @Param type query string true "试卷类型，如 CET-4/CET-6"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]model.Paper}
 // @Router /api/paper/type [get]
 func (h *PaperHandler) ByType(c *gin.Context) {
 	papers, err := h.service.ByType(c.Query("type"))
@@ -125,7 +125,7 @@ func (h *PaperHandler) ByType(c *gin.Context) {
 // @Description 返回数据库中存在的全部试卷类型。
 // @Tags paper
 // @Produce json
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]string}
 // @Router /api/paper/types [get]
 func (h *PaperHandler) Types(c *gin.Context) {
 	types, err := h.service.Types()
@@ -142,7 +142,7 @@ func (h *PaperHandler) Types(c *gin.Context) {
 // @Tags paper
 // @Produce json
 // @Param id query int true "试卷 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.PaperIntro}
 // @Router /api/paper/intro [get]
 func (h *PaperHandler) Intro(c *gin.Context) {
 	id, err := strconv.Atoi(c.Query("id"))

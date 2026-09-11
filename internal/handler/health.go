@@ -2,6 +2,7 @@ package handler
 
 import (
 	"onepractice-golang/internal/common/response"
+	"onepractice-golang/internal/dto"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -20,9 +21,9 @@ func NewHealthHandler(db *gorm.DB) *HealthHandler {
 // @Description 返回服务状态和数据库是否启用。
 // @Tags health
 // @Produce json
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.HealthResponse}
 // @Router /health [get]
 func (h *HealthHandler) Check(c *gin.Context) {
-	data := gin.H{"status": "ok", "database": h.db != nil}
+	data := dto.HealthResponse{Status: "ok", Database: h.db != nil}
 	response.Success(c, data)
 }

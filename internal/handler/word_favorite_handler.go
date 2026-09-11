@@ -101,7 +101,7 @@ func (h *WordFavoriteHandler) Remove(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Param wordid query int false "单词 ID"
 // @Param word query string false "英文拼写"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=bool}
 // @Router /api/word/favorites/check [get]
 func (h *WordFavoriteHandler) Check(c *gin.Context) {
 	userID, ok := loginID(c)
@@ -140,7 +140,7 @@ func (h *WordFavoriteHandler) Check(c *gin.Context) {
 // @Param keyword query string false "在单词拼写和释义中搜索"
 // @Param page query int false "页码，默认 1"
 // @Param page_size query int false "每页数量，默认 20，最大 100"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.CollectedWordList}
 // @Router /api/word/favorites [get]
 func (h *WordFavoriteHandler) List(c *gin.Context) {
 	userID, ok := loginID(c)

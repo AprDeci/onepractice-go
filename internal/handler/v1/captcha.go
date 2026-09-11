@@ -57,7 +57,7 @@ func (h *CaptchaHandler) SendEmail(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body apiv1.EmailVerificationVerifyRequest true "邮箱验证码参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=apiv1.ResetTokenResponse}
 // @Router /api/v1/auth/email-verifications/verification [post]
 func (h *CaptchaHandler) VerifyEmail(c *gin.Context) {
 	var req dtoV1.EmailVerificationVerifyRequest
