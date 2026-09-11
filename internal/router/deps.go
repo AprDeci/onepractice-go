@@ -22,7 +22,6 @@ type Deps struct {
 	LegacyDictionary   *handler.DictionaryHandler
 	LegacyRecord       *handler.RecordHandler
 	LegacyWordFavorite *handler.WordFavoriteHandler
-	LegacyAgent        *handler.AgentHandler
 	LegacyHealth       *handler.HealthHandler
 	V1User             *handlerv1.UserHandler
 	V1Captcha          *handlerv1.CaptchaHandler
@@ -32,6 +31,7 @@ type Deps struct {
 	V1Record           *handlerv1.RecordHandler
 	V1WordFavorite     *handlerv1.WordFavoriteHandler
 	V1Essay            *handlerv1.EssayHandler
+	V1Agent            *handlerv1.AgentHandler
 }
 
 func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSender service.MailSender, essayService *service.EssayService) Deps {
@@ -51,7 +51,6 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 		LegacyDictionary:   handler.NewDictionaryHandler(dictionarySvc),
 		LegacyRecord:       handler.NewRecordHandler(recordSvc),
 		LegacyWordFavorite: handler.NewWordFavoriteHandler(favoriteSvc),
-		LegacyAgent:        handler.NewAgentHandler(llm.NewGlmClient(cfg.LLM.GlmKey)),
 		LegacyHealth:       handler.NewHealthHandler(db),
 		V1User:             handlerv1.NewUserHandler(userSvc),
 		V1Captcha:          handlerv1.NewCaptchaHandler(captchaSvc),
@@ -61,6 +60,7 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 		V1Record:           handlerv1.NewRecordHandler(recordSvc),
 		V1WordFavorite:     handlerv1.NewWordFavoriteHandler(favoriteSvc),
 		V1Essay:            handlerv1.NewEssayHandler(essayService),
+		V1Agent:            handlerv1.NewAgentHandler(llm.NewGlmClient(cfg.LLM.GlmKey)),
 	}
 }
 

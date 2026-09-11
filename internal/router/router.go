@@ -80,6 +80,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	registerRecordRoutes(v1Protected, deps.V1Record)
 	registerWordFavoriteRoutes(v1Protected, deps.V1WordFavorite)
 	registerEssayRoutes(v1Protected, deps.V1Essay)
+	registerAgentRoutes(v1Protected, deps.V1Agent)
 
 	legacy := r.Group("/api")
 	legacy.Use(middleware.TimeoutMiddleware(5 * time.Second))
@@ -89,7 +90,6 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	legacyProtected := legacy.Group("")
 	legacyProtected.Use(middleware.Auth())
 	registerLegacyProtectedRoutes(legacyProtected, deps)
-	registerAgentRoutes(legacyProtected, deps.LegacyAgent)
 
 	return r, cleanup, nil
 }

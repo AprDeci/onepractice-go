@@ -200,3 +200,11 @@ type EssayTaskCreatedResponse struct {
 	TaskID string `json:"taskId"`
 	Status string `json:"status"`
 }
+
+// OCR
+
+// OcrResponse 是图片 OCR 识别的结果。
+type OcrResponse struct {
+	MdResult     string             `json:"md_results"`
+	LayoutDetail [][]map[string]any `json:"layout_details"`
+}

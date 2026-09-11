@@ -103,6 +103,7 @@ func TestV1ProtectedRoutesRequireAuth(t *testing.T) {
 		{http.MethodPost, "/api/v1/essay/tasks"},
 		{http.MethodGet, "/api/v1/essay/tasks/abc"},
 		{http.MethodGet, "/api/v1/essay/records/abc/results"},
+		{http.MethodPost, "/api/v1/ocr"},
 	}
 	for _, tc := range cases {
 		w := doRequest(t, r, tc.method, tc.path)
@@ -153,7 +154,6 @@ func TestLegacyProtectedRoutesRequireAuth(t *testing.T) {
 		{http.MethodGet, "/api/record/list"},
 		{http.MethodPost, "/api/word/favorites"},
 		{http.MethodGet, "/api/word/favorites"},
-		{http.MethodPost, "/api/ocr"},
 	}
 	for _, tc := range cases {
 		w := doRequest(t, r, tc.method, tc.path)
@@ -188,11 +188,11 @@ func TestV1InvalidPathParameterReturns400(t *testing.T) {
 	}
 }
 
-func TestV1OCRIsNotRegistered(t *testing.T) {
+func TestLegacyOCRRemoved(t *testing.T) {
 	r := newTestEngine(t)
-	w := doRequest(t, r, http.MethodPost, "/api/v1/ocr")
+	w := doRequest(t, r, http.MethodPost, "/api/ocr")
 	if w.Code != http.StatusNotFound {
-		t.Errorf("POST /api/v1/ocr: want 404 (OCR is legacy-only), got %d", w.Code)
+		t.Errorf("POST /api/ocr: want 404 (moved to /api/v1/ocr), got %d", w.Code)
 	}
 }
 

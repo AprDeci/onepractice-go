@@ -1,4 +1,4 @@
-package handler
+package v1
 
 import (
 	"io"
@@ -8,6 +8,7 @@ import (
 	"onepractice-golang/internal/agent/llm"
 	"onepractice-golang/internal/common/apperror"
 	"onepractice-golang/internal/common/response"
+	dtoV1 "onepractice-golang/internal/dto/v1"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,10 +30,10 @@ func NewAgentHandler(ocr *llm.GlmClient) *AgentHandler {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param image formData file true "图片文件，支持 jpg/jpeg/png/webp，单张不超过 10MB"
-// @Success 200 {object} response.Body{data=llm.OcrResult}
+// @Success 200 {object} response.Body{data=apiv1.OcrResponse}
 // @Failure 400 {object} response.Body
 // @Failure 500 {object} response.Body
-// @Router /api/ocr [post]
+// @Router /api/v1/ocr [post]
 func (h *AgentHandler) OCR(c *gin.Context) {
 	file, err := c.FormFile("image")
 	if err != nil {
@@ -74,5 +75,5 @@ func (h *AgentHandler) OCR(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, result)
+	response.Success(c, dtoV1.OcrResponse{MdResult: result.MdResult, LayoutDetail: result.LayoutDetail})
 }
