@@ -1,6 +1,8 @@
 package model
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -44,4 +46,33 @@ func ListEssayResultsByRecord(db *gorm.DB, userID int64, recordID string) ([]Ess
 		Order("created_at desc").
 		Find(&rows).Error
 	return rows, err
+}
+
+// ListStandaloneEssayResults 分页查询某用户的独立作文（record_id 为空）评分结果，按评分时间倒序。
+func ListStandaloneEssayResults(db *gorm.DB, userID int64, offset, limit int) ([]EssayGradingResult, int64, error) {
+	var total int64
+	if err := db.Model(&EssayGradingResult{}).
+		Where("user_id = ? and record_id = ''", userID).
+		Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	var rows []EssayGradingResult
+	err := db.Where("user_id = ? and record_id = ''", userID).
+		Order("created_at desc").
+		Offset(offset).Limit(limit).
+		Find(&rows).Error
+	return rows, total, err
+}
+
+// GetEssayResultByTask 按 task_id 查询某用户的作文评分结果，不存在时返回 nil, nil。
+func GetEssayResultByTask(db *gorm.DB, userID int64, taskID string) (*EssayGradingResult, error) {
+	var row EssayGradingResult
+	err := db.Where("user_id = ? and task_id = ?", userID, taskID).First(&row).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &row, nil
 }

@@ -122,3 +122,71 @@ func (h *EssayHandler) GetResultsByRecord(c *gin.Context) {
 
 	response.Success(c, results)
 }
+
+// ListResults 查询当前用户的独立作文评分历史。
+// @Summary 查询独立作文评分历史
+// @Description 分页查询当前登录用户不关联考试记录的独立作文评分结果。
+// @Tags essay
+// @Produce json
+// @Security ApiKeyAuth
+// @Param page query int false "页码"
+// @Param pageSize query int false "每页大小"
+// @Success 200 {object} response.Body{data=apiv1.EssayResultPage}
+// @Router /api/v1/essay/results [get]
+func (h *EssayHandler) ListResults(c *gin.Context) {
+	userID, ok := currentUserID(c)
+	if !ok {
+		return
+	}
+	var q dtoV1.PageQuery
+	if err := c.ShouldBindQuery(&q); err != nil {
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		return
+	}
+	q = q.Normalize()
+	results, total, err := h.service.ListStandaloneResults(userID, q.Page, q.PageSize)
+	if err != nil {
+		if errors.Is(err, service.ErrDatabaseDisabled) {
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+			return
+		}
+		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		return
+	}
+	response.Success(c, newPage(results, total, q))
+}
+
+// GetResultByTask 按 taskId 查询作文评分结果（DB 兜底，不受 Redis TTL 限制）。
+// @Summary 查询作文评分结果
+// @Description 按 taskId 从数据库查询当前登录用户的作文评分结果。
+// @Tags essay
+// @Produce json
+// @Security ApiKeyAuth
+// @Param taskId path string true "任务 ID"
+// @Success 200 {object} response.Body{data=dto.EssayResultResponse}
+// @Router /api/v1/essay/results/{taskId} [get]
+func (h *EssayHandler) GetResultByTask(c *gin.Context) {
+	userID, ok := currentUserID(c)
+	if !ok {
+		return
+	}
+	taskID := c.Param("taskId")
+	if taskID == "" {
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "taskId 不能为空"))
+		return
+	}
+	result, err := h.service.GetResultByTask(userID, taskID)
+	if err != nil {
+		if errors.Is(err, service.ErrTaskNotFound) {
+			response.Error(c, apperror.New(apperror.CodeNotFound, "任务不存在"))
+			return
+		}
+		if errors.Is(err, service.ErrDatabaseDisabled) {
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+			return
+		}
+		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		return
+	}
+	response.Success(c, result)
+}

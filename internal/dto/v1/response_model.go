@@ -3,6 +3,7 @@ package apiv1
 import (
 	"time"
 
+	"onepractice-golang/internal/dto"
 	"onepractice-golang/internal/model"
 )
 
@@ -22,6 +23,7 @@ type (
 	PaperPage          = Page[model.Paper]
 	RecordPage         = Page[UserExamRecord]
 	FavoriteWordPage   = Page[CollectedWordItem]
+	EssayResultPage    = Page[dto.EssayResultResponse]
 )
 
 // 认证

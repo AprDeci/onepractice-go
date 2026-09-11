@@ -205,6 +205,39 @@ func (s *EssayService) GetResultsByRecord(userID int64, recordID string) ([]dto.
 	return results, nil
 }
 
+// ListStandaloneResults 分页查询当前用户的独立作文评分历史（不关联考试记录）。
+func (s *EssayService) ListStandaloneResults(userID int64, page, pageSize int) ([]dto.EssayResultResponse, int64, error) {
+	if s == nil || s.db == nil {
+		return nil, 0, ErrDatabaseDisabled
+	}
+	offset := (page - 1) * pageSize
+	rows, total, err := appmodel.ListStandaloneEssayResults(s.db, userID, offset, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	results := make([]dto.EssayResultResponse, 0, len(rows))
+	for _, row := range rows {
+		results = append(results, toEssayResultResponse(row))
+	}
+	return results, total, nil
+}
+
+// GetResultByTask 从数据库查询某任务的作文评分结果，不受 Redis TTL 影响。
+func (s *EssayService) GetResultByTask(userID int64, taskID string) (*dto.EssayResultResponse, error) {
+	if s == nil || s.db == nil {
+		return nil, ErrDatabaseDisabled
+	}
+	row, err := appmodel.GetEssayResultByTask(s.db, userID, taskID)
+	if err != nil {
+		return nil, err
+	}
+	if row == nil {
+		return nil, ErrTaskNotFound
+	}
+	resp := toEssayResultResponse(*row)
+	return &resp, nil
+}
+
 func toEssayResultResponse(row appmodel.EssayGradingResult) dto.EssayResultResponse {
 	resp := dto.EssayResultResponse{
 		TaskID:         row.TaskID,
