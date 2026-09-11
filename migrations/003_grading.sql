@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `essay_grading_results` (
   `task_id` char(32) NOT NULL,
   `user_id` bigint NOT NULL,
   `record_id` char(32) NOT NULL DEFAULT '',
-  `title` varchar(255) NOT NULL DEFAULT '',
+  `title` text NOT NULL,
   `full_score` int NOT NULL DEFAULT 0,
   `total_score` decimal(6,2) NOT NULL DEFAULT 0,
   `grammar_score` decimal(6,2) NOT NULL DEFAULT 0,

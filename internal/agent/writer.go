@@ -11,7 +11,6 @@ import (
 	essayPrompt "onepractice-golang/internal/agent/prompt"
 
 	"github.com/cloudwego/eino/components/model"
-	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
 )
 
@@ -100,13 +99,9 @@ func EssayScore(ctx context.Context, cm model.BaseChatModel, input Input) (Outpu
 		return Output{}, err
 	}
 
-	template := prompt.FromMessages(schema.FString,
+	messages := []*schema.Message{
 		schema.SystemMessage(essayPrompt.WriterPrompt),
-		schema.UserMessage("{input}"),
-	)
-	messages, err := template.Format(ctx, map[string]any{"input": string(inputJSON)})
-	if err != nil {
-		return Output{}, err
+		schema.UserMessage(string(inputJSON)),
 	}
 
 	var (
