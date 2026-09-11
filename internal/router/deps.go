@@ -40,7 +40,7 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 	userSvc := service.NewUserService(db, captchaSvc)
 	questionSvc := service.NewQuestionService(db)
 	dictionarySvc := service.NewDictionaryService(db)
-	recordSvc := service.NewRecordService(redisClient, paperSvc)
+	recordSvc := service.NewRecordService(paperSvc, db)
 	favoriteSvc := service.NewWordFavoriteService(db)
 
 	return Deps{
@@ -65,7 +65,7 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 }
 
 // newEssayService 依据 cfg.LLM.Default 选定模型并创建作文批改服务。
-func newEssayService(cfg config.Config, redisClient *redis.Client) (*service.EssayService, error) {
+func newEssayService(cfg config.Config, redisClient *redis.Client, db *gorm.DB) (*service.EssayService, error) {
 	modelCfg, ok := cfg.LLM.Models[cfg.LLM.Default]
 	if !ok {
 		return nil, fmt.Errorf("llm.default %q 未在 llm.models 中定义", cfg.LLM.Default)
@@ -80,5 +80,5 @@ func newEssayService(cfg config.Config, redisClient *redis.Client) (*service.Ess
 	if err != nil {
 		return nil, err
 	}
-	return service.NewEssayService(redisClient, cm), nil
+	return service.NewEssayService(redisClient, cm, db), nil
 }

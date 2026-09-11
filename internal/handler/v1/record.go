@@ -129,7 +129,7 @@ func recordListError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, service.ErrInvalidParam):
 		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
-	case errors.Is(err, service.ErrRedisDisabled):
+	case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 		response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 	default:
 		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
@@ -139,7 +139,7 @@ func updateRecordError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, service.ErrInvalidParam):
 		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
-	case errors.Is(err, service.ErrRedisDisabled):
+	case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 		response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 	default:
 		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))

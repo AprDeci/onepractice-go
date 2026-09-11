@@ -1,22 +1,18 @@
 package service
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"sort"
-	"strconv"
 	"strings"
 	"time"
 
 	"onepractice-golang/internal/dto"
+	"onepractice-golang/internal/model"
 
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 const (
-	recordTTL       = 30 * 24 * time.Hour
 	defaultListDays = 30
 	defaultPageNum  = 1
 	defaultPageSize = 10
@@ -24,17 +20,17 @@ const (
 )
 
 type RecordService struct {
-	redis *redis.Client
 	paper *PaperService
+	db    *gorm.DB
 }
 
-func NewRecordService(redisClient *redis.Client, paperService *PaperService) *RecordService {
-	return &RecordService{redis: redisClient, paper: paperService}
+func NewRecordService(paperService *PaperService, db *gorm.DB) *RecordService {
+	return &RecordService{paper: paperService, db: db}
 }
 
 func (s *RecordService) Create(userID int64, req dto.RecordRequest) (string, error) {
-	if s.redis == nil {
-		return "", ErrRedisDisabled
+	if s.db == nil {
+		return "", ErrDatabaseDisabled
 	}
 	if req.PaperID == 0 {
 		return "", ErrInvalidParam
@@ -48,22 +44,22 @@ func (s *RecordService) Create(userID int64, req dto.RecordRequest) (string, err
 
 	now := time.Now().UnixMilli()
 	recordID := strings.ReplaceAll(uuid.NewString(), "-", "")
-	record := dto.UserExamRecord{
+	row := model.ExamRecord{
 		RecordID:     recordID,
 		UserID:       userID,
 		PaperID:      paperID,
 		PaperType:    intro.PaperType,
 		PaperName:    formatPaperName(intro),
-		Type:         req.Type,
+		ExamType:     req.Type,
 		IsFinished:   req.IsFinished,
 		Answers:      req.Answers,
-		TimeSpend:    req.TimeSpend,
 		Score:        req.Score,
 		TotalScore:   req.TotalScore,
-		Timestamp:    now,
+		TimeSpend:    req.TimeSpend,
 		HasSpendTime: int64(req.HasSpendTime),
+		SubmitTS:     now,
 	}
-	if err := s.saveRecord(context.Background(), record); err != nil {
+	if err := row.Upsert(s.db); err != nil {
 		return "", err
 	}
 	return recordID, nil
@@ -75,8 +71,8 @@ func (s *RecordService) ListRecent(userID int64, days, pageNum, pageSize int) ([
 }
 
 func (s *RecordService) ListRecentPage(userID int64, days, pageNum, pageSize int) ([]dto.UserExamRecord, int64, error) {
-	if s.redis == nil {
-		return nil, 0, ErrRedisDisabled
+	if s.db == nil {
+		return nil, 0, ErrDatabaseDisabled
 	}
 	if days <= 0 {
 		days = defaultListDays
@@ -91,99 +87,58 @@ func (s *RecordService) ListRecentPage(userID int64, days, pageNum, pageSize int
 		pageSize = maxPageSize
 	}
 
-	ctx := context.Background()
-	minTimestamp := time.Now().Add(-time.Duration(days) * 24 * time.Hour).UnixMilli()
-	zsetKey := recordSortedSetKey(userID)
-	_ = s.redis.ZRemRangeByScore(ctx, zsetKey, "-inf", strconv.FormatInt(minTimestamp-1, 10)).Err()
-	_ = s.redis.Expire(ctx, zsetKey, recordTTL).Err()
-
-	start := int64((pageNum - 1) * pageSize)
-	stop := start + int64(pageSize) - 1
-	recordIDs, err := s.redis.ZRevRange(ctx, zsetKey, start, stop).Result()
+	sinceMS := time.Now().Add(-time.Duration(days) * 24 * time.Hour).UnixMilli()
+	offset := (pageNum - 1) * pageSize
+	rows, total, err := model.ListExamRecordsByUser(s.db, userID, sinceMS, offset, pageSize)
 	if err != nil {
 		return nil, 0, err
 	}
-	total, err := s.redis.ZCard(ctx, zsetKey).Result()
-	if err != nil {
-		return nil, 0, err
+	records := make([]dto.UserExamRecord, 0, len(rows))
+	for _, row := range rows {
+		records = append(records, toUserExamRecord(row))
 	}
-
-	records := make([]dto.UserExamRecord, 0, len(recordIDs))
-	missing := make([]string, 0)
-	for _, recordID := range recordIDs {
-		payload, getErr := s.redis.Get(ctx, recordDetailKey(userID, recordID)).Result()
-		if getErr != nil {
-			missing = append(missing, recordID)
-			continue
-		}
-		var record dto.UserExamRecord
-		if unmarshalErr := json.Unmarshal([]byte(payload), &record); unmarshalErr != nil {
-			missing = append(missing, recordID)
-			continue
-		}
-		records = append(records, record)
-	}
-	if len(missing) > 0 {
-		members := make([]redis.Z, 0, len(missing))
-		_ = members
-		args := make([]interface{}, 0, len(missing))
-		for _, recordID := range missing {
-			args = append(args, recordID)
-		}
-		_ = s.redis.ZRem(ctx, zsetKey, args...).Err()
-	}
-	sort.Slice(records, func(i, j int) bool { return records[i].Timestamp > records[j].Timestamp })
 	return records, total, nil
 }
 
 func (s *RecordService) Update(userID int64, req dto.RecordRequest) error {
-	if s.redis == nil {
-		return ErrRedisDisabled
+	if s.db == nil {
+		return ErrDatabaseDisabled
 	}
 	if req.RecordID == "" {
 		return ErrInvalidParam
 	}
 
-	ctx := context.Background()
-	payload, err := s.redis.Get(ctx, recordDetailKey(userID, req.RecordID)).Result()
-	if err != nil {
-		return ErrInvalidParam
-	}
-
-	var record dto.UserExamRecord
-	if err = json.Unmarshal([]byte(payload), &record); err != nil {
-		return ErrInvalidParam
-	}
-	record.Timestamp = time.Now().UnixMilli()
-	record.Score = req.Score
-	record.Answers = req.Answers
-	record.IsFinished = req.IsFinished
-	record.HasSpendTime = int64(req.HasSpendTime)
-	return s.saveRecord(ctx, record)
-}
-
-func (s *RecordService) saveRecord(ctx context.Context, record dto.UserExamRecord) error {
-	payload, err := json.Marshal(record)
+	row, err := model.GetExamRecordByID(s.db, userID, req.RecordID)
 	if err != nil {
 		return err
 	}
-	pipe := s.redis.Pipeline()
-	detailKey := recordDetailKey(record.UserID, record.RecordID)
-	zsetKey := recordSortedSetKey(record.UserID)
-	pipe.Set(ctx, detailKey, payload, recordTTL)
-	pipe.ZAdd(ctx, zsetKey, redis.Z{Score: float64(record.Timestamp), Member: record.RecordID})
-	pipe.Expire(ctx, zsetKey, recordTTL)
-	pipe.ZRemRangeByScore(ctx, zsetKey, "-inf", strconv.FormatInt(time.Now().Add(-recordTTL).UnixMilli(), 10))
-	_, err = pipe.Exec(ctx)
-	return err
+	if row == nil {
+		return ErrInvalidParam
+	}
+	row.Score = req.Score
+	row.Answers = req.Answers
+	row.IsFinished = req.IsFinished
+	row.HasSpendTime = int64(req.HasSpendTime)
+	row.SubmitTS = time.Now().UnixMilli()
+	return row.Upsert(s.db)
 }
 
-func recordDetailKey(userID int64, recordID string) string {
-	return fmt.Sprintf("onepractice:record:user:%d:%s", userID, recordID)
-}
-
-func recordSortedSetKey(userID int64) string {
-	return fmt.Sprintf("onepractice:user:record:sorted:%d", userID)
+func toUserExamRecord(row model.ExamRecord) dto.UserExamRecord {
+	return dto.UserExamRecord{
+		RecordID:     row.RecordID,
+		UserID:       row.UserID,
+		PaperID:      row.PaperID,
+		PaperType:    row.PaperType,
+		PaperName:    row.PaperName,
+		Type:         row.ExamType,
+		IsFinished:   row.IsFinished,
+		Answers:      row.Answers,
+		TimeSpend:    row.TimeSpend,
+		Score:        row.Score,
+		TotalScore:   row.TotalScore,
+		Timestamp:    row.SubmitTS,
+		HasSpendTime: row.HasSpendTime,
+	}
 }
 
 func formatPaperName(intro dto.PaperIntro) string {

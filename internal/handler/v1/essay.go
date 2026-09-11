@@ -47,7 +47,7 @@ func (h *EssayHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
-	taskID, err := h.service.CreateTask(c.Request.Context(), userID, agent.Input{
+	taskID, err := h.service.CreateTask(c.Request.Context(), userID, req.RecordID, agent.Input{
 		Title:   req.Title,
 		Content: req.Content,
 		Type:    req.Type,
@@ -86,4 +86,38 @@ func (h *EssayHandler) GetTask(c *gin.Context) {
 	}
 
 	response.Success(c, task)
+}
+
+// GetResultsByRecord 查询某次考试的作文评分结果。
+// @Summary 查询考试的作文评分结果
+// @Description 按 recordId 查询当前登录用户某次考试关联的作文评分结果列表。
+// @Tags essay
+// @Produce json
+// @Security ApiKeyAuth
+// @Param recordId path string true "答题记录 ID"
+// @Success 200 {object} response.Body
+// @Router /api/v1/essay/records/{recordId}/results [get]
+func (h *EssayHandler) GetResultsByRecord(c *gin.Context) {
+	userID, ok := currentUserID(c)
+	if !ok {
+		return
+	}
+
+	recordID := c.Param("recordId")
+	if recordID == "" {
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "recordId 不能为空"))
+		return
+	}
+
+	results, err := h.service.GetResultsByRecord(userID, recordID)
+	if err != nil {
+		if errors.Is(err, service.ErrDatabaseDisabled) {
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+			return
+		}
+		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		return
+	}
+
+	response.Success(c, results)
 }

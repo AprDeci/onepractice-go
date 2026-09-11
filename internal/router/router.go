@@ -32,7 +32,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 		mailModule.Sender = mail.NewQueueSender(mailQueue)
 	}
 
-	essayService, err := newEssayService(cfg, redisClient)
+	essayService, err := newEssayService(cfg, redisClient, database)
 	if err != nil {
 		cancelQueues()
 		return nil, nil, fmt.Errorf("初始化作文批改服务失败: %w", err)

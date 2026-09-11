@@ -21,9 +21,9 @@ func deadRedis(t *testing.T) *redis.Client {
 }
 
 func TestEssayServiceWithoutRedisReturnsDisabled(t *testing.T) {
-	svc := service.NewEssayService(nil, nil)
+	svc := service.NewEssayService(nil, nil, nil)
 
-	if _, err := svc.CreateTask(context.Background(), 1, agent.Input{Title: "t", Content: "c", Type: "四级"}); !errors.Is(err, service.ErrRedisDisabled) {
+	if _, err := svc.CreateTask(context.Background(), 1, "", agent.Input{Title: "t", Content: "c", Type: "四级"}); !errors.Is(err, service.ErrRedisDisabled) {
 		t.Fatalf("CreateTask() error = %v, want ErrRedisDisabled", err)
 	}
 	if _, err := svc.GetTask(context.Background(), 1, "task"); !errors.Is(err, service.ErrRedisDisabled) {
@@ -32,18 +32,18 @@ func TestEssayServiceWithoutRedisReturnsDisabled(t *testing.T) {
 }
 
 func TestEssayServiceCreateTaskPropagatesCanceledContext(t *testing.T) {
-	svc := service.NewEssayService(deadRedis(t), nil)
+	svc := service.NewEssayService(deadRedis(t), nil, nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	if _, err := svc.CreateTask(ctx, 1, agent.Input{}); !errors.Is(err, context.Canceled) {
+	if _, err := svc.CreateTask(ctx, 1, "", agent.Input{}); !errors.Is(err, context.Canceled) {
 		t.Fatalf("CreateTask() error = %v, want context.Canceled", err)
 	}
 }
 
 func TestEssayServiceHandleRejectsMalformedJob(t *testing.T) {
-	svc := service.NewEssayService(deadRedis(t), nil)
+	svc := service.NewEssayService(deadRedis(t), nil, nil)
 
 	if err := svc.Handle(context.Background(), message_queue.Message{Body: 123}); err == nil {
 		t.Fatal("Handle() error = nil, want unmarshal error")
@@ -51,7 +51,7 @@ func TestEssayServiceHandleRejectsMalformedJob(t *testing.T) {
 }
 
 func TestEssayServiceHandleSkipsEmptyTaskID(t *testing.T) {
-	svc := service.NewEssayService(deadRedis(t), nil)
+	svc := service.NewEssayService(deadRedis(t), nil, nil)
 
 	if err := svc.Handle(context.Background(), message_queue.Message{Body: map[string]string{"taskId": ""}}); err != nil {
 		t.Fatalf("Handle() error = %v, want nil", err)
@@ -59,7 +59,7 @@ func TestEssayServiceHandleSkipsEmptyTaskID(t *testing.T) {
 }
 
 func TestEssayServiceHandlePropagatesCanceledContext(t *testing.T) {
-	svc := service.NewEssayService(deadRedis(t), nil)
+	svc := service.NewEssayService(deadRedis(t), nil, nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()

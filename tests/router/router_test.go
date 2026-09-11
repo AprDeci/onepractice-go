@@ -102,6 +102,7 @@ func TestV1ProtectedRoutesRequireAuth(t *testing.T) {
 		{http.MethodDelete, "/api/v1/users/me/favorite-words/1"},
 		{http.MethodPost, "/api/v1/essay/tasks"},
 		{http.MethodGet, "/api/v1/essay/tasks/abc"},
+		{http.MethodGet, "/api/v1/essay/records/abc/results"},
 	}
 	for _, tc := range cases {
 		w := doRequest(t, r, tc.method, tc.path)
