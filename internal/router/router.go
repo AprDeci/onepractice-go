@@ -55,7 +55,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "token"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "token", "x-silent-error"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
