@@ -37,7 +37,7 @@ func newTestEngine(t *testing.T) *gin.Engine {
 			"test": {BaseURL: "https://example.com/v1", Model: "test-model", APIKey: "test-key"},
 		},
 	}}
-	engine, cleanup, err := router.New(cfg, nil, nil, logger)
+	engine, _, cleanup, err := router.New(cfg, nil, nil, logger)
 	if err != nil {
 		t.Fatalf("new router: %v", err)
 	}
@@ -76,6 +76,7 @@ func TestV1PublicRoutesRegistered(t *testing.T) {
 		{http.MethodGet, "/api/v1/dictionary/words/by-spelling/test"},
 		{http.MethodGet, "/api/v1/dictionary/books"},
 		{http.MethodGet, "/api/v1/dictionary/books/1/words"},
+		{http.MethodGet, "/api/v1/points/costs"},
 	}
 	for _, tc := range cases {
 		w := doRequest(t, r, tc.method, tc.path)
@@ -104,6 +105,10 @@ func TestV1ProtectedRoutesRequireAuth(t *testing.T) {
 		{http.MethodGet, "/api/v1/essay/tasks/abc"},
 		{http.MethodGet, "/api/v1/essay/records/abc/results"},
 		{http.MethodPost, "/api/v1/ocr"},
+		{http.MethodGet, "/api/v1/points/balance"},
+		{http.MethodGet, "/api/v1/points/transactions"},
+		{http.MethodPost, "/api/v1/points/daily-checkin"},
+		{http.MethodGet, "/api/v1/points/checkin-status"},
 	}
 	for _, tc := range cases {
 		w := doRequest(t, r, tc.method, tc.path)

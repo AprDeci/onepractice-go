@@ -45,6 +45,14 @@ func Load() Config {
 			GlmKey:  v.GetString("llm.glm_key"),
 			Default: v.GetString("llm.default"),
 		},
+		Points: PointsConfig{
+			Defaults: PointsDefaultsConfig{
+				OCRCost:          v.GetInt64("points.defaults.ocr_cost"),
+				EssayCost:        v.GetInt64("points.defaults.essay_cost"),
+				DailyLoginReward: v.GetInt64("points.defaults.daily_login_reward"),
+			},
+			ReserveTimeoutMins: v.GetInt("points.reserve_timeout_minutes"),
+		},
 	}
 	// chat 模型列表为动态 map，逐字段读取无法覆盖，需整体反序列化。
 	_ = v.UnmarshalKey("llm.models", &cfg.LLM.Models)
@@ -75,6 +83,10 @@ func bindEnvs(v *viper.Viper) {
 	bindEnv(v, "mail.from", "SENDFLARE_FROM")
 	bindEnv(v, "mail.disabled", "SENDFLARE_DISABLED")
 	bindEnv(v, "llm.glm_key", "GLM_API_KEY")
+	bindEnv(v, "points.defaults.ocr_cost", "POINTS_OCR_COST")
+	bindEnv(v, "points.defaults.essay_cost", "POINTS_ESSAY_COST")
+	bindEnv(v, "points.defaults.daily_login_reward", "POINTS_DAILY_LOGIN_REWARD")
+	bindEnv(v, "points.reserve_timeout_minutes", "POINTS_RESERVE_TIMEOUT_MINUTES")
 }
 
 func bindEnv(v *viper.Viper, key string, envNames ...string) {
@@ -117,4 +129,8 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("mail.from", "")
 	v.SetDefault("llm.glm_key", "")
 	v.SetDefault("llm.default", "")
+	v.SetDefault("points.defaults.ocr_cost", 1)
+	v.SetDefault("points.defaults.essay_cost", 2)
+	v.SetDefault("points.defaults.daily_login_reward", 6)
+	v.SetDefault("points.reserve_timeout_minutes", 10)
 }

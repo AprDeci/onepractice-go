@@ -50,6 +50,10 @@ func New() (*App, error) {
 }
 
 func NewWithConfig(cfg config.Config) (*App, error) {
+	if err := cfg.Points.Validate(); err != nil {
+		return nil, fmt.Errorf("配置校验失败: %w", err)
+	}
+
 	database, err := openDatabase(cfg.Database)
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)
@@ -74,7 +78,7 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 
 	auth.Init(cfg.Auth, redisClient)
 
-	engine, cleanup, err := router.New(cfg, database, redisClient, logger)
+	engine, pointsSvc, cleanup, err := router.New(cfg, database, redisClient, logger)
 	if err != nil {
 		if logCloser != nil {
 			_ = logCloser.Close()
@@ -85,7 +89,7 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 	}
 
 	cronManager := cron.NewManager(cfg.Cron, logger)
-	if err := cron.Register(cronManager, logger); err != nil {
+	if err := cron.Register(cronManager, logger, pointsSvc); err != nil {
 		cleanup()
 		if logCloser != nil {
 			_ = logCloser.Close()

@@ -210,3 +210,43 @@ type OcrResponse struct {
 	MdResult     string             `json:"md_results"`
 	LayoutDetail [][]map[string]any `json:"layout_details"`
 }
+
+// 积分
+
+type PointsBalanceResponse struct {
+	Balance int64 `json:"balance"`
+}
+
+type PointsTransactionItem struct {
+	ID           uint64    `json:"id"`
+	Delta        int64     `json:"delta"`
+	BalanceAfter int64     `json:"balanceAfter"`
+	Type         string    `json:"type"`
+	BizID        string    `json:"bizId"`
+	Remark       string    `json:"remark"`
+	CreatedAt    time.Time `json:"createdAt"`
+}
+
+type PointsTransactionPage = Page[PointsTransactionItem]
+
+type PointsGrantResponse struct {
+	Granted bool  `json:"granted"`
+	Balance int64 `json:"balance"`
+}
+
+type CheckinStatusResponse struct {
+	CheckedIn bool `json:"checkedIn"`
+}
+
+// PointsCostItem 描述单个功能的当前积分消耗。
+type PointsCostItem struct {
+	Action string `json:"action"`
+	Name   string `json:"name"`
+	Cost   int64  `json:"cost"`
+}
+
+// PointsCostsResponse 返回各功能的当前积分消耗与签到奖励。
+type PointsCostsResponse struct {
+	Costs            []PointsCostItem `json:"costs"`
+	DailyLoginReward int64            `json:"dailyLoginReward"`
+}

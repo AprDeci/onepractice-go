@@ -86,6 +86,8 @@ func httpStatus(code int) int {
 		return http.StatusMethodNotAllowed
 	case apperror.CodeConflict:
 		return http.StatusConflict
+	case apperror.CodeInsufficientPoints:
+		return http.StatusPaymentRequired
 	case apperror.CodeServiceUnavailable:
 		return http.StatusServiceUnavailable
 	default:

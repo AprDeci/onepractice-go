@@ -10,6 +10,7 @@ const (
 	CodeNotFound           = 40400 // 请求的接口或业务数据不存在。
 	CodeMethodNotAllowed   = 40500 // 接口存在，但不支持当前 HTTP 方法。
 	CodeConflict           = 40900 // 请求与当前数据状态冲突。
+	CodeInsufficientPoints = 40200 // 用户积分余额不足以完成当前操作。
 	CodeInternal           = 50000 // 服务端发生未预期的内部错误。
 	CodeServiceUnavailable = 50300 // 依赖或服务暂时不可用。
 )

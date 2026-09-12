@@ -14,7 +14,7 @@ func openDatabase(cfg config.DatabaseConfig) (*gorm.DB, error) {
 		return nil, nil
 	}
 
-	return gorm.Open(mysql.Open(cfg.DSN), &gorm.Config{})
+	return gorm.Open(mysql.Open(cfg.DSN), &gorm.Config{TranslateError: true})
 }
 
 func closeDatabase(database *gorm.DB) error {

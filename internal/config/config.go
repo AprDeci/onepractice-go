@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 type Config struct {
 	Server   ServerConfig
 	Log      LogConfig
@@ -9,6 +11,34 @@ type Config struct {
 	Mail     MailConfig
 	LLM      LLMConfig
 	Cron     CronConfig `mapstructure:"cron"`
+	Points   PointsConfig
+}
+
+// PointsConfig 描述积分系统的默认单价与预留订单超时时间。
+type PointsConfig struct {
+	Defaults           PointsDefaultsConfig `mapstructure:"defaults"`
+	ReserveTimeoutMins int                  `mapstructure:"reserve_timeout_minutes"`
+}
+
+// PointsDefaultsConfig 是未配置 point_rules 时各动作的积分单价默认值。
+type PointsDefaultsConfig struct {
+	OCRCost          int64 `mapstructure:"ocr_cost"`
+	EssayCost        int64 `mapstructure:"essay_cost"`
+	DailyLoginReward int64 `mapstructure:"daily_login_reward"`
+}
+
+// Validate 校验积分默认单价必须为正数，避免出现零价或负价扣费。
+func (c PointsConfig) Validate() error {
+	if c.Defaults.OCRCost <= 0 {
+		return fmt.Errorf("points.defaults.ocr_cost must be > 0")
+	}
+	if c.Defaults.EssayCost <= 0 {
+		return fmt.Errorf("points.defaults.essay_cost must be > 0")
+	}
+	if c.Defaults.DailyLoginReward <= 0 {
+		return fmt.Errorf("points.defaults.daily_login_reward must be > 0")
+	}
+	return nil
 }
 
 // LLMConfig 描述 chat 模型列表与默认使用的模型；GlmKey 仅用于 OCR。

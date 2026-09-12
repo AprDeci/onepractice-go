@@ -32,6 +32,10 @@ type Deps struct {
 	V1WordFavorite     *handlerv1.WordFavoriteHandler
 	V1Essay            *handlerv1.EssayHandler
 	V1Agent            *handlerv1.AgentHandler
+	V1Points           *handlerv1.PointsHandler
+
+	// Points 供进程级后台任务（如预扣补偿 cron）复用。
+	Points *service.PointsService
 }
 
 func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSender service.MailSender, essayService *service.EssayService) Deps {
@@ -42,6 +46,10 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 	dictionarySvc := service.NewDictionaryService(db)
 	recordSvc := service.NewRecordService(paperSvc, db)
 	favoriteSvc := service.NewWordFavoriteService(db)
+	pointsSvc := service.NewPointsService(db, redisClient, cfg.Points)
+	if essayService != nil {
+		essayService.SetPoints(pointsSvc)
+	}
 
 	return Deps{
 		LegacyUser:         handler.NewUserHandler(userSvc),
@@ -60,7 +68,9 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 		V1Record:           handlerv1.NewRecordHandler(recordSvc),
 		V1WordFavorite:     handlerv1.NewWordFavoriteHandler(favoriteSvc),
 		V1Essay:            handlerv1.NewEssayHandler(essayService),
-		V1Agent:            handlerv1.NewAgentHandler(llm.NewGlmClient(cfg.LLM.GlmKey)),
+		V1Agent:            handlerv1.NewAgentHandler(llm.NewGlmClient(cfg.LLM.GlmKey), pointsSvc),
+		V1Points:           handlerv1.NewPointsHandler(pointsSvc),
+		Points:             pointsSvc,
 	}
 }
 

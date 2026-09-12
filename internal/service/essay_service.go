@@ -31,10 +31,11 @@ const (
 
 // EssayService 负责作文批改任务的创建、异步执行与查询。
 type EssayService struct {
-	redis *redis.Client
-	model model.BaseChatModel
-	queue *message_queue.Queue
-	db    *gorm.DB
+	redis  *redis.Client
+	model  model.BaseChatModel
+	queue  *message_queue.Queue
+	db     *gorm.DB
+	points *PointsService
 }
 
 // NewEssayService 创建作文批改服务。redis 或 model 为 nil 时仅创建空壳，
@@ -46,6 +47,11 @@ func NewEssayService(redisClient *redis.Client, cm model.BaseChatModel, db *gorm
 // SetQueue 注入用于投递批改任务的队列。
 func (s *EssayService) SetQueue(queue *message_queue.Queue) {
 	s.queue = queue
+}
+
+// SetPoints 注入积分服务，用于作文批改的预扣、结算与退款。
+func (s *EssayService) SetPoints(points *PointsService) {
+	s.points = points
 }
 
 type essayJob struct {
@@ -61,6 +67,16 @@ func (s *EssayService) CreateTask(ctx context.Context, userID int64, recordID st
 	}
 
 	taskID := strings.ReplaceAll(uuid.NewString(), "-", "")
+	if s.points != nil {
+		cost, err := s.points.CostOf(ctx, PointActionEssay)
+		if err != nil {
+			return "", err
+		}
+		if err := s.points.Deduct(ctx, userID, cost, PointTypeEssaySpend, taskID, "作文批改"); err != nil {
+			return "", err
+		}
+	}
+
 	now := time.Now()
 	task := dto.EssayTask{
 		ID:        taskID,
@@ -72,10 +88,12 @@ func (s *EssayService) CreateTask(ctx context.Context, userID int64, recordID st
 		UpdatedAt: now,
 	}
 	if err := s.saveTask(ctx, &task); err != nil {
+		s.refundEssay(ctx, userID, taskID, "创建任务失败")
 		return "", err
 	}
 	if s.queue != nil {
 		if _, err := s.queue.Publish(message_queue.NewMessage("", now, essayJob{TaskID: taskID, UserID: userID, RecordID: recordID})); err != nil {
+			s.refundEssay(ctx, userID, taskID, "投递任务失败")
 			return "", err
 		}
 	}
@@ -147,6 +165,7 @@ func (s *EssayService) Handle(ctx context.Context, msg message_queue.Message) er
 		task.Status = dto.EssayTaskFailed
 		task.Error = scoreErr.Error()
 		_ = s.saveTask(ctx, task)
+		s.refundEssay(ctx, task.UserID, task.ID, "作文批改失败")
 		return nil
 	}
 
@@ -161,6 +180,7 @@ func (s *EssayService) Handle(ctx context.Context, msg message_queue.Message) er
 			slog.Warn("持久化作文评分结果失败", slog.String("taskId", task.ID), slog.Any("err", err))
 		}
 	}
+	s.settleEssay(ctx, task.UserID, task.ID)
 	return nil
 }
 
@@ -259,6 +279,36 @@ func toEssayResultResponse(row appmodel.EssayGradingResult) dto.EssayResultRespo
 		}
 	}
 	return resp
+}
+
+// refundEssay 退还一笔作文预扣积分；使用脱离取消的上下文，保证退款不因原请求取消而失败。
+func (s *EssayService) refundEssay(ctx context.Context, userID int64, taskID, reason string) {
+	if s.points == nil {
+		return
+	}
+	if err := s.points.Refund(context.WithoutCancel(ctx), userID, PointTypeEssaySpend, taskID, reason); err != nil {
+		slog.Warn("作文积分退款失败", slog.String("taskId", taskID), slog.Any("err", err))
+	}
+}
+
+// settleEssay 在批改成功后结算预扣积分；若流水已退款或缺失则放弃结算并告警，避免重复入账。
+func (s *EssayService) settleEssay(ctx context.Context, userID int64, taskID string) {
+	if s.points == nil {
+		return
+	}
+	status, found, err := s.points.SpendStatus(ctx, userID, PointTypeEssaySpend, taskID)
+	if err != nil {
+		slog.Warn("作文积分结算前查询失败", slog.String("taskId", taskID), slog.Any("err", err))
+		return
+	}
+	if !found || status == PointStatusRefunded {
+		slog.Warn("作文扣费已退款或缺失，放弃结算",
+			slog.String("taskId", taskID), slog.Int("status", status), slog.Bool("found", found))
+		return
+	}
+	if err := s.points.Settle(ctx, userID, taskID); err != nil {
+		slog.Warn("作文积分结算失败", slog.String("taskId", taskID), slog.Any("err", err))
+	}
 }
 
 // 保存任务

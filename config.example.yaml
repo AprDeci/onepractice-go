@@ -38,3 +38,22 @@ llm:
       model: "glm-4-flash"
       api_key: ""
       temperature: 0.2
+
+# 积分系统：point_rules 无匹配规则时使用以下默认单价。
+points:
+  defaults:
+    ocr_cost: 1
+    essay_cost: 2
+    daily_login_reward: 6
+  # 作文预扣超过该分钟数仍未结算，则由定时任务自动退款。
+  reserve_timeout_minutes: 10
+
+# 后台定时任务配置。键名需与代码注册的任务名一致。
+cron:
+  demo:
+    enabled: false
+    expression: "10 * * * *"
+  # 积分预扣补偿：扫描超时未结算的作文扣费并退款。
+  points_reserve_expiry:
+    enabled: true
+    expression: "*/5 * * * *"

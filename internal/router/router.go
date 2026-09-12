@@ -18,8 +18,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// New 组装依赖并返回 HTTP 引擎，以及用于关闭后台模块（mail、essay 等）的 cleanup 函数。
-func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger *slog.Logger) (*gin.Engine, func(), error) {
+// New 组装依赖并返回 HTTP 引擎、积分服务，以及用于关闭后台模块（mail、essay 等）的 cleanup 函数。
+func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger *slog.Logger) (*gin.Engine, *service.PointsService, func(), error) {
 	queueCtx, cancelQueues := context.WithCancel(context.Background())
 
 	mailModule := mail.NewModule(cfg.Mail)
@@ -35,7 +35,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	essayService, err := newEssayService(cfg, redisClient, database)
 	if err != nil {
 		cancelQueues()
-		return nil, nil, fmt.Errorf("初始化作文批改服务失败: %w", err)
+		return nil, nil, nil, fmt.Errorf("初始化作文批改服务失败: %w", err)
 	}
 	if redisClient != nil {
 		essayQueue := message_queue.NewQueue(queueCtx, redisClient,
@@ -74,6 +74,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	registerPaperRoutes(apiV1, deps.V1Paper)
 	registerQuestionRoutes(apiV1, deps.V1Question)
 	registerDictionaryRoutes(apiV1, deps.V1Dictionary)
+	registerPointsPublicRoutes(apiV1, deps.V1Points)
 	v1Protected := apiV1.Group("")
 	v1Protected.Use(middleware.Auth())
 	registerUserProtectedRoutes(v1Protected, deps.V1User)
@@ -81,6 +82,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	registerWordFavoriteRoutes(v1Protected, deps.V1WordFavorite)
 	registerEssayRoutes(v1Protected, deps.V1Essay)
 	registerAgentRoutes(v1Protected, deps.V1Agent)
+	registerPointsRoutes(v1Protected, deps.V1Points)
 
 	legacy := r.Group("/api")
 	legacy.Use(middleware.TimeoutMiddleware(5 * time.Second))
@@ -91,5 +93,5 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	legacyProtected.Use(middleware.Auth())
 	registerLegacyProtectedRoutes(legacyProtected, deps)
 
-	return r, cleanup, nil
+	return r, deps.Points, cleanup, nil
 }

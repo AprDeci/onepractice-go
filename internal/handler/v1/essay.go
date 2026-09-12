@@ -54,7 +54,14 @@ func (h *EssayHandler) CreateTask(c *gin.Context) {
 		Type:    req.Type,
 	})
 	if err != nil {
-		response.Error(c, apperror.New(apperror.CodeInternal, err.Error()))
+		switch {
+		case errors.Is(err, service.ErrInsufficientPoints):
+			response.Error(c, apperror.New(apperror.CodeInsufficientPoints, "积分不足"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.New(apperror.CodeInternal, err.Error()))
+		}
 		return
 	}
 
