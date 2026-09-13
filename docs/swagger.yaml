@@ -1,0 +1,3020 @@
+basePath: /
+definitions:
+  agent.Input:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  agent.Output:
+    properties:
+      essayAdvice:
+        type: string
+      essayFeedback:
+        properties:
+          overallProblems:
+            items:
+              type: string
+            type: array
+          sentsFeedback:
+            items:
+              properties:
+                correctedSent:
+                  type: string
+                errorPosInfos:
+                  items:
+                    properties:
+                      correctChunk:
+                        type: string
+                      detailReason:
+                        type: string
+                      errBaseInfo:
+                        type: string
+                      errorTypeTitle:
+                        type: string
+                      orgChunk:
+                        type: string
+                    type: object
+                  type: array
+                isContainGrammarError:
+                  type: boolean
+                paraId:
+                  type: integer
+                rawSent:
+                  type: string
+                sentFeedback:
+                  type: string
+                sentId:
+                  type: integer
+              type: object
+            type: array
+        type: object
+      fullScore:
+        type: integer
+      improvementAdvice:
+        items:
+          type: string
+        type: array
+      majorScore:
+        properties:
+          grammarAdvice:
+            type: string
+          grammarScore:
+            type: number
+          structureAdvice:
+            type: string
+          structureScore:
+            type: number
+          topicAdvice:
+            type: string
+          topicScore:
+            type: number
+          wordAdvice:
+            type: string
+          wordScore:
+            type: number
+        type: object
+      paraNum:
+        type: integer
+      rawEssay:
+        type: string
+      rewriteSuggestions:
+        items:
+          properties:
+            original:
+              type: string
+            reason:
+              type: string
+            rewritten:
+              type: string
+          type: object
+        type: array
+      sentNum:
+        type: integer
+      title:
+        type: string
+      totalEvaluation:
+        type: string
+      totalScore:
+        type: number
+      type:
+        type: string
+      wordNum:
+        type: integer
+    type: object
+  apiv1.AnswersResponse:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/model.Answer'
+        type: array
+      paperId:
+        type: integer
+    type: object
+  apiv1.CheckinStatusResponse:
+    properties:
+      checkedIn:
+        type: boolean
+    type: object
+  apiv1.CollectedWordItem:
+    properties:
+      createdAt:
+        type: string
+      favoriteId:
+        type: integer
+      frequency:
+        type: number
+      id:
+        type: integer
+      paperId:
+        type: integer
+      paraphrase:
+        type: string
+      spelling:
+        type: string
+      ukPhonetic:
+        type: string
+      usPhonetic:
+        type: string
+      word:
+        type: string
+      wordId:
+        type: integer
+    type: object
+  apiv1.CreateRecordRequest:
+    properties:
+      answers:
+        type: string
+      hasSpendTime:
+        type: integer
+      isFinished:
+        type: integer
+      paperId:
+        type: integer
+      score:
+        type: integer
+      timeSpend:
+        type: integer
+      totalScore:
+        type: integer
+      type:
+        type: string
+    required:
+    - paperId
+    type: object
+  apiv1.DictionaryBookListItem:
+    properties:
+      bookId:
+        type: integer
+      bookName:
+        type: string
+      status:
+        type: integer
+      vocCount:
+        type: integer
+    type: object
+  apiv1.DictionaryBookPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/apiv1.DictionaryBookListItem'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiv1.DictionaryBookSimple:
+    properties:
+      bookId:
+        type: integer
+      bookName:
+        type: string
+    type: object
+  apiv1.DictionaryLookupResult:
+    properties:
+      exact:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/apiv1.DictionaryWordListItem'
+        type: array
+      spelling:
+        type: string
+      total:
+        type: integer
+    type: object
+  apiv1.DictionaryWordDetail:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/apiv1.DictionaryBookSimple'
+        type: array
+      examples:
+        items:
+          $ref: '#/definitions/apiv1.DictionaryWordExampleItem'
+        type: array
+      word:
+        $ref: '#/definitions/apiv1.DictionaryWordListItem'
+    type: object
+  apiv1.DictionaryWordExampleItem:
+    properties:
+      addDate:
+        type: string
+      cn:
+        type: string
+      en:
+        type: string
+      exaPid:
+        type: integer
+      heat:
+        type: integer
+    type: object
+  apiv1.DictionaryWordListItem:
+    properties:
+      frequency:
+        type: number
+      paraphrase:
+        type: string
+      spelling:
+        type: string
+      ukPhonetic:
+        type: string
+      usPhonetic:
+        type: string
+      wordId:
+        type: integer
+    type: object
+  apiv1.DictionaryWordPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/apiv1.DictionaryWordListItem'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiv1.EmailVerificationRequest:
+    properties:
+      email:
+        type: string
+      purpose:
+        type: string
+    required:
+    - email
+    type: object
+  apiv1.EmailVerificationVerifyRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+      purpose:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  apiv1.EssayResultPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.EssayResultResponse'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiv1.EssayTaskCreatedResponse:
+    properties:
+      status:
+        type: string
+      taskId:
+        type: string
+    type: object
+  apiv1.FavoriteStatusResponse:
+    properties:
+      favorited:
+        type: boolean
+      wordId:
+        type: integer
+    type: object
+  apiv1.FavoriteWordPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/apiv1.CollectedWordItem'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiv1.FavoriteWordRequest:
+    properties:
+      paperId:
+        type: integer
+      wordId:
+        type: integer
+    required:
+    - wordId
+    type: object
+  apiv1.LoginRequest:
+    properties:
+      password:
+        type: string
+      usernameOrEmail:
+        type: string
+    required:
+    - password
+    - usernameOrEmail
+    type: object
+  apiv1.LoginResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      token:
+        type: string
+      username:
+        type: string
+    type: object
+  apiv1.OcrResponse:
+    properties:
+      layout_details:
+        items:
+          items:
+            additionalProperties: {}
+            type: object
+          type: array
+        type: array
+      md_results:
+        type: string
+    type: object
+  apiv1.PaperIntro:
+    properties:
+      difficulty:
+        type: string
+      examMonth:
+        type: integer
+      examYear:
+        type: integer
+      paperName:
+        type: string
+      paperTime:
+        type: integer
+      paperType:
+        type: string
+      sectionCount:
+        type: integer
+      sectionQuestionCount:
+        items:
+          type: integer
+        type: array
+    type: object
+  apiv1.PaperPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/model.Paper'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiv1.PointsBalanceResponse:
+    properties:
+      balance:
+        type: integer
+    type: object
+  apiv1.PointsGrantResponse:
+    properties:
+      balance:
+        type: integer
+      granted:
+        type: boolean
+    type: object
+  apiv1.PointsTransactionItem:
+    properties:
+      balanceAfter:
+        type: integer
+      bizId:
+        type: string
+      createdAt:
+        type: string
+      delta:
+        type: integer
+      id:
+        type: integer
+      remark:
+        type: string
+      type:
+        type: string
+    type: object
+  apiv1.PointsTransactionPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/apiv1.PointsTransactionItem'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiv1.PracticeQuestionGroup:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/model.Answer'
+        type: array
+      paperId:
+        type: integer
+      questionParts:
+        items:
+          $ref: '#/definitions/apiv1.QuestionPart'
+        type: array
+    type: object
+  apiv1.PracticeQuestionRequest:
+    properties:
+      questionType:
+        type: string
+      unitCount:
+        type: integer
+    required:
+    - questionType
+    - unitCount
+    type: object
+  apiv1.PracticeQuestionResponse:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/apiv1.PracticeQuestionGroup'
+        type: array
+      questionType:
+        type: string
+    type: object
+  apiv1.QuestionPart:
+    properties:
+      questions:
+        items:
+          $ref: '#/definitions/model.Question'
+        type: array
+    type: object
+  apiv1.RecordCreatedResponse:
+    properties:
+      recordId:
+        type: string
+    type: object
+  apiv1.RecordPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/apiv1.UserExamRecord'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiv1.RegisterRequest:
+    properties:
+      captchaCode:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      userType:
+        type: integer
+      username:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - captchaCode
+    - email
+    - password
+    - username
+    type: object
+  apiv1.RegisterResponse:
+    properties:
+      email:
+        type: string
+      username:
+        type: string
+    type: object
+  apiv1.ResetPasswordRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      resetToken:
+        type: string
+    required:
+    - email
+    - password
+    - resetToken
+    type: object
+  apiv1.ResetTokenResponse:
+    properties:
+      resetToken:
+        type: string
+    type: object
+  apiv1.UpdateRecordRequest:
+    properties:
+      answers:
+        type: string
+      hasSpendTime:
+        type: integer
+      isFinished:
+        type: integer
+      paperId:
+        type: integer
+      score:
+        type: integer
+      timeSpend:
+        type: integer
+      totalScore:
+        type: integer
+      type:
+        type: string
+    required:
+    - paperId
+    type: object
+  apiv1.UserExamRecord:
+    properties:
+      answers:
+        type: string
+      hasSpendTime:
+        type: integer
+      isFinished:
+        type: integer
+      paperId:
+        type: integer
+      paperName:
+        type: string
+      paperType:
+        type: string
+      recordId:
+        type: string
+      score:
+        type: integer
+      timeSpend:
+        type: integer
+      timestamp:
+        type: integer
+      totalScore:
+        type: integer
+      type:
+        type: string
+      userId:
+        type: integer
+    type: object
+  apiv1.UserInfoResponse:
+    properties:
+      email:
+        type: string
+      userType:
+        type: integer
+      username:
+        type: string
+    type: object
+  dto.AnswersResponse:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/model.Answer'
+        type: array
+      paperId:
+        type: integer
+    type: object
+  dto.CollectedWordItem:
+    properties:
+      created_at:
+        type: string
+      favorite_id:
+        type: integer
+      frequency:
+        type: number
+      id:
+        type: integer
+      paper_id:
+        type: integer
+      paraphrase:
+        type: string
+      spelling:
+        type: string
+      uk_phonetic:
+        type: string
+      us_phonetic:
+        type: string
+      word:
+        type: string
+      wordid:
+        type: integer
+    type: object
+  dto.CollectedWordList:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.CollectedWordItem'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.CreateEssayTaskRequest:
+    properties:
+      content:
+        type: string
+      recordId:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+    required:
+    - content
+    - title
+    - type
+    type: object
+  dto.DictionaryBookListItem:
+    properties:
+      bookid:
+        type: integer
+      bookname:
+        type: string
+      status:
+        type: integer
+      voccount:
+        type: integer
+    type: object
+  dto.DictionaryBookListPage:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/dto.DictionaryBookListItem'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.DictionaryBookSimple:
+    properties:
+      bookid:
+        type: integer
+      bookname:
+        type: string
+    type: object
+  dto.DictionaryLookupResult:
+    properties:
+      exact:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/dto.DictionaryWordListItem'
+        type: array
+      spelling:
+        type: string
+      total:
+        type: integer
+    type: object
+  dto.DictionaryWordDetail:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/dto.DictionaryBookSimple'
+        type: array
+      examples:
+        items:
+          $ref: '#/definitions/dto.DictionaryWordExampleItem'
+        type: array
+      word:
+        $ref: '#/definitions/dto.DictionaryWordListItem'
+    type: object
+  dto.DictionaryWordExampleItem:
+    properties:
+      adddate:
+        type: string
+      cn:
+        type: string
+      en:
+        type: string
+      exapid:
+        type: integer
+      heat:
+        type: integer
+    type: object
+  dto.DictionaryWordListItem:
+    properties:
+      frequency:
+        type: number
+      paraphrase:
+        type: string
+      spelling:
+        type: string
+      uk_phonetic:
+        type: string
+      us_phonetic:
+        type: string
+      wordid:
+        type: integer
+    type: object
+  dto.DictionaryWordListPage:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/dto.DictionaryWordListItem'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.EmailCaptchaRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+      purpose:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  dto.EssayResultResponse:
+    properties:
+      createdAt:
+        type: string
+      fullScore:
+        type: integer
+      grammarScore:
+        type: number
+      recordId:
+        type: string
+      result:
+        $ref: '#/definitions/agent.Output'
+      structureScore:
+        type: number
+      taskId:
+        type: string
+      title:
+        type: string
+      topicScore:
+        type: number
+      totalScore:
+        type: number
+      wordNum:
+        type: integer
+      wordScore:
+        type: number
+    type: object
+  dto.EssayTask:
+    properties:
+      createdAt:
+        type: string
+      error:
+        type: string
+      input:
+        $ref: '#/definitions/agent.Input'
+      recordId:
+        type: string
+      result:
+        $ref: '#/definitions/agent.Output'
+      status:
+        type: string
+      taskId:
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        type: integer
+    type: object
+  dto.ExamQuestion:
+    properties:
+      paperId:
+        type: integer
+      questionParts:
+        items:
+          $ref: '#/definitions/dto.QuestionPart'
+        type: array
+    type: object
+  dto.HealthResponse:
+    properties:
+      database:
+        type: boolean
+      status:
+        type: string
+    type: object
+  dto.LoginRequest:
+    properties:
+      password:
+        type: string
+      usernameorEmail:
+        type: string
+    required:
+    - password
+    - usernameorEmail
+    type: object
+  dto.LoginResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      token:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.PaperIntro:
+    properties:
+      difficulty:
+        type: string
+      examMonth:
+        type: integer
+      examYear:
+        type: integer
+      paperName:
+        type: string
+      paperTime:
+        type: integer
+      paperType:
+        type: string
+      sectionCount:
+        type: integer
+      sectionQuestionCount:
+        items:
+          type: integer
+        type: array
+    type: object
+  dto.PaperPage:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Paper'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.PaperQueryRequest:
+    properties:
+      page:
+        minimum: 1
+        type: integer
+      size:
+        maximum: 100
+        minimum: 1
+        type: integer
+      type:
+        type: string
+      year:
+        type: integer
+    required:
+    - page
+    - size
+    type: object
+  dto.PaperWithRating:
+    properties:
+      examMonth:
+        type: integer
+      examYear:
+        type: integer
+      number:
+        type: integer
+      paperId:
+        type: integer
+      paperName:
+        type: string
+      questionCount:
+        type: integer
+      rating:
+        type: integer
+      totalTime:
+        type: integer
+      type:
+        type: string
+      version:
+        type: integer
+    type: object
+  dto.PaperWithRatingPage:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.PaperWithRating'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.PracticeQuestionGroup:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/model.Answer'
+        type: array
+      paperId:
+        type: integer
+      questionParts:
+        items:
+          $ref: '#/definitions/dto.QuestionPart'
+        type: array
+    type: object
+  dto.PracticeQuestionRequest:
+    properties:
+      questionType:
+        type: string
+      unitCount:
+        type: integer
+    required:
+    - questionType
+    - unitCount
+    type: object
+  dto.PracticeQuestionResponse:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/dto.PracticeQuestionGroup'
+        type: array
+      questionType:
+        type: string
+    type: object
+  dto.QuestionPart:
+    properties:
+      questions:
+        items:
+          $ref: '#/definitions/model.Question'
+        type: array
+    type: object
+  dto.RecordRequest:
+    properties:
+      answers:
+        type: string
+      hasspendtime:
+        type: integer
+      isfinished:
+        type: integer
+      paperId:
+        type: integer
+      recordId:
+        type: string
+      score:
+        type: integer
+      timespend:
+        type: integer
+      totalscore:
+        type: integer
+      type:
+        type: string
+    required:
+    - paperId
+    type: object
+  dto.RegisterRequest:
+    properties:
+      captchacode:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        maxLength: 20
+        minLength: 3
+        type: string
+      usertype:
+        type: integer
+    required:
+    - captchacode
+    - email
+    - password
+    - username
+    type: object
+  dto.RegisterResponse:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.ResetPasswordRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      resetToken:
+        type: string
+    required:
+    - email
+    - password
+    - resetToken
+    type: object
+  dto.ResetPasswordTokenResponse:
+    properties:
+      resetToken:
+        type: string
+    type: object
+  dto.UserExamRecord:
+    properties:
+      answers:
+        type: string
+      hasspendtime:
+        type: integer
+      isfinished:
+        type: integer
+      paperId:
+        type: integer
+      paperName:
+        type: string
+      paperType:
+        type: string
+      recordId:
+        type: string
+      score:
+        type: integer
+      timespend:
+        type: integer
+      timestamp:
+        type: integer
+      totalscore:
+        type: integer
+      type:
+        type: string
+      userId:
+        type: integer
+    type: object
+  dto.UserInfoResponse:
+    properties:
+      email:
+        type: string
+      userType:
+        type: integer
+      username:
+        type: string
+    type: object
+  dto.WordFavoriteRequest:
+    properties:
+      paper_id:
+        type: integer
+      word:
+        type: string
+      wordid:
+        type: integer
+    type: object
+  model.Answer:
+    properties:
+      answer:
+        type: string
+      index:
+        type: string
+    type: object
+  model.Option:
+    properties:
+      content:
+        type: string
+      label:
+        type: string
+    type: object
+  model.Paper:
+    properties:
+      examMonth:
+        type: integer
+      examYear:
+        type: integer
+      paperId:
+        type: integer
+      paperName:
+        type: string
+      questionCount:
+        type: integer
+      totalTime:
+        type: integer
+      type:
+        type: string
+      version:
+        type: integer
+    type: object
+  model.Question:
+    properties:
+      content:
+        type: string
+      correctAnswer:
+        items:
+          $ref: '#/definitions/model.Answer'
+        type: array
+      listenurl:
+        type: string
+      matchingData:
+        items:
+          $ref: '#/definitions/model.ReadItem'
+        type: array
+      options:
+        items:
+          $ref: '#/definitions/model.Option'
+        type: array
+      paperId:
+        type: integer
+      partName:
+        type: string
+      questionId:
+        type: integer
+      questionOrder:
+        type: integer
+      questionType:
+        type: string
+      readingSplitQuestion:
+        items:
+          type: string
+        type: array
+      sectionName:
+        type: string
+      wordBank:
+        items:
+          type: string
+        type: array
+    type: object
+  model.ReadItem:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+    type: object
+  response.Body:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+      request_id:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Onepractice 在线英语真题平台 Go 后端 API。
+  title: Onepractice API
+  version: 0.1.0
+paths:
+  /api/captcha/email:
+    get:
+      description: 向指定邮箱发送验证码。
+      parameters:
+      - description: 邮箱
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 发送邮箱验证码
+      tags:
+      - captcha
+  /api/captcha/email/verify:
+    post:
+      consumes:
+      - application/json
+      description: 校验邮箱验证码，成功后返回重置密码凭证。
+      parameters:
+      - description: 邮箱验证码参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.EmailCaptchaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResetPasswordTokenResponse'
+              type: object
+      summary: 校验邮箱验证码
+      tags:
+      - captcha
+  /api/dictionary/books:
+    get:
+      description: 按词书名称和状态分页查询词书。
+      parameters:
+      - description: 词书名称关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 词书状态
+        in: query
+        name: status
+        type: integer
+      - description: 页码，默认 1
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量，默认 20，最大 100
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DictionaryBookListPage'
+              type: object
+      summary: 分页查询词书
+      tags:
+      - dictionary
+  /api/dictionary/books/{bookid}/words:
+    get:
+      description: 根据词书 ID 分页查询该词书下的单词，支持关键词搜索。
+      parameters:
+      - description: 词书 ID
+        in: path
+        name: bookid
+        required: true
+        type: integer
+      - description: 在单词拼写和释义中搜索
+        in: query
+        name: keyword
+        type: string
+      - description: 页码，默认 1
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量，默认 20，最大 100
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DictionaryWordListPage'
+              type: object
+      summary: 分页查询词书单词
+      tags:
+      - dictionary
+  /api/dictionary/lookup:
+    get:
+      description: 根据英文拼写查询中文释义，可选择精确匹配或模糊匹配。
+      parameters:
+      - description: 英文拼写
+        in: query
+        name: spelling
+        required: true
+        type: string
+      - description: 是否精确匹配，默认 false
+        in: query
+        name: exact
+        type: boolean
+      - description: 返回数量，默认 20，最大 100
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DictionaryLookupResult'
+              type: object
+      summary: 按单词查询释义
+      tags:
+      - dictionary
+  /api/dictionary/words:
+    get:
+      description: 按关键词、拼写、释义、词书和词频范围分页查询单词。
+      parameters:
+      - description: 在单词拼写和释义中搜索
+        in: query
+        name: keyword
+        type: string
+      - description: 按英文拼写模糊搜索
+        in: query
+        name: spelling
+        type: string
+      - description: 按中文释义模糊搜索
+        in: query
+        name: paraphrase
+        type: string
+      - description: 词书 ID
+        in: query
+        name: bookid
+        type: integer
+      - description: 最小词频
+        in: query
+        name: min_frequency
+        type: number
+      - description: 最大词频
+        in: query
+        name: max_frequency
+        type: number
+      - description: 页码，默认 1
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量，默认 20，最大 100
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DictionaryWordListPage'
+              type: object
+      summary: 分页查询单词
+      tags:
+      - dictionary
+  /api/dictionary/words/{wordid}:
+    get:
+      description: 根据单词 ID 获取单词基础信息、所属词书和例句。
+      parameters:
+      - description: 单词 ID
+        in: path
+        name: wordid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DictionaryWordDetail'
+              type: object
+      summary: 获取单词详情
+      tags:
+      - dictionary
+  /api/dictionary/words/spelling/{spelling}:
+    get:
+      description: 根据英文拼写精确获取单词基础信息、所属词书和例句。
+      parameters:
+      - description: 英文拼写
+        in: path
+        name: spelling
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DictionaryWordDetail'
+              type: object
+      summary: 按拼写获取单词详情
+      tags:
+      - dictionary
+  /api/paper/all:
+    get:
+      description: 返回全部试卷列表。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Paper'
+                  type: array
+              type: object
+      summary: 获取全部试卷
+      tags:
+      - paper
+  /api/paper/getPaperandRatingWithQuerys:
+    post:
+      consumes:
+      - application/json
+      description: 按试卷类型和年份分页查询试卷，同时返回评分和题目数量。
+      parameters:
+      - description: 查询条件
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PaperQueryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PaperWithRatingPage'
+              type: object
+      summary: 分页查询试卷和评分
+      tags:
+      - paper
+  /api/paper/getPaperwithQuerys:
+    post:
+      consumes:
+      - application/json
+      description: 按试卷类型和年份分页查询试卷。
+      parameters:
+      - description: 查询条件
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PaperQueryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PaperPage'
+              type: object
+      summary: 分页查询试卷
+      tags:
+      - paper
+  /api/paper/intro:
+    get:
+      description: 根据试卷 ID 返回试卷简介、分区数量和各分区题目数量。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PaperIntro'
+              type: object
+      summary: 获取试卷简介
+      tags:
+      - paper
+  /api/paper/type:
+    get:
+      description: 根据试卷类型查询试卷列表。
+      parameters:
+      - description: 试卷类型，如 CET-4/CET-6
+        in: query
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Paper'
+                  type: array
+              type: object
+      summary: 按类型查询试卷
+      tags:
+      - paper
+  /api/paper/types:
+    get:
+      description: 返回数据库中存在的全部试卷类型。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: 获取全部试卷类型
+      tags:
+      - paper
+  /api/question/getAllByIdSplitByPart:
+    get:
+      description: 返回指定试卷题目，并按 partName 分组。Part II 内按 questionOrder 排序。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ExamQuestion'
+              type: object
+      summary: 按 Part 分组获取题目
+      tags:
+      - question
+  /api/question/getAnswersByPaperId:
+    get:
+      description: 返回指定试卷的全部答案，并按答案序号排序。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AnswersResponse'
+              type: object
+      summary: 获取试卷答案
+      tags:
+      - question
+  /api/question/getById:
+    get:
+      description: 返回指定试卷下的全部题目。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Question'
+                  type: array
+              type: object
+      summary: 按试卷 ID 获取题目
+      tags:
+      - question
+  /api/question/getByType:
+    get:
+      description: 返回指定试卷下指定题型的题目。
+      parameters:
+      - description: 试卷 ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      - description: 题型
+        in: query
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Question'
+                  type: array
+              type: object
+      summary: 按试卷 ID 和题型获取题目
+      tags:
+      - question
+  /api/question/practice:
+    post:
+      consumes:
+      - application/json
+      description: 无需登录，返回随机试卷中的指定题型、题组和答案。
+      parameters:
+      - description: 专项训练参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PracticeQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PracticeQuestionResponse'
+              type: object
+      summary: 获取专项训练题目
+      tags:
+      - question
+  /api/record/list:
+    get:
+      description: 按最近天数分页获取当前登录用户的答题记录。
+      parameters:
+      - description: 最近天数
+        in: query
+        name: days
+        type: integer
+      - description: 页码
+        in: query
+        name: pageNum
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.UserExamRecord'
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取答题记录列表
+      tags:
+      - record
+  /api/record/save:
+    post:
+      consumes:
+      - application/json
+      description: 为当前登录用户创建一条答题记录，返回 recordId。
+      parameters:
+      - description: 答题记录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 保存答题记录
+      tags:
+      - record
+  /api/record/update:
+    post:
+      consumes:
+      - application/json
+      description: 更新当前登录用户已有答题记录的作答结果。
+      parameters:
+      - description: 答题记录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新答题记录
+      tags:
+      - record
+  /api/user/info:
+    get:
+      description: 根据 token 获取当前登录用户信息。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserInfoResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - user
+  /api/user/login:
+    post:
+      consumes:
+      - application/json
+      description: 使用用户名或邮箱登录，成功后返回 sa-token-go token。兼容旧 AES 密码，成功后升级为 bcrypt。
+      parameters:
+      - description: 登录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.LoginResponse'
+              type: object
+      summary: 用户登录
+      tags:
+      - user
+  /api/user/logout:
+    post:
+      description: 使当前 token 失效。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 用户登出
+      tags:
+      - user
+  /api/user/register:
+    post:
+      consumes:
+      - application/json
+      description: 使用用户名、密码、邮箱和邮箱验证码注册用户。
+      parameters:
+      - description: 注册参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.RegisterResponse'
+              type: object
+      summary: 用户注册
+      tags:
+      - user
+  /api/user/resetpassword:
+    post:
+      consumes:
+      - application/json
+      description: 使用邮箱和重置凭证重置密码。
+      parameters:
+      - description: 重置密码参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 重置密码
+      tags:
+      - user
+  /api/v1/auth/email-verifications:
+    post:
+      consumes:
+      - application/json
+      description: 向指定邮箱发送验证码。
+      parameters:
+      - description: 邮箱验证参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.EmailVerificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 发送邮箱验证码
+      tags:
+      - captcha
+  /api/v1/auth/email-verifications/verification:
+    post:
+      consumes:
+      - application/json
+      description: 校验邮箱验证码，成功后返回重置密码凭证。
+      parameters:
+      - description: 邮箱验证码参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.EmailVerificationVerifyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.ResetTokenResponse'
+              type: object
+      summary: 校验邮箱验证码
+      tags:
+      - captcha
+  /api/v1/auth/password-resets:
+    post:
+      consumes:
+      - application/json
+      description: 使用邮箱和重置凭证重置密码。
+      parameters:
+      - description: 重置密码参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      summary: 重置密码
+      tags:
+      - user
+  /api/v1/auth/registrations:
+    post:
+      consumes:
+      - application/json
+      description: 使用用户名、密码、邮箱和邮箱验证码注册用户。
+      parameters:
+      - description: 注册参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.RegisterResponse'
+              type: object
+      summary: 用户注册
+      tags:
+      - user
+  /api/v1/auth/sessions:
+    post:
+      consumes:
+      - application/json
+      description: 使用用户名或邮箱登录。
+      parameters:
+      - description: 登录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.LoginResponse'
+              type: object
+      summary: 用户登录
+      tags:
+      - user
+  /api/v1/auth/sessions/current:
+    delete:
+      description: 使当前 token 失效。
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: 用户登出
+      tags:
+      - user
+  /api/v1/dictionary/books:
+    get:
+      description: 按词书名称和状态分页查询词书。
+      parameters:
+      - description: 关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 状态
+        in: query
+        name: status
+        type: integer
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.DictionaryBookPage'
+              type: object
+      summary: 分页查询词书
+      tags:
+      - dictionary
+  /api/v1/dictionary/books/{bookId}/words:
+    get:
+      description: 根据词书 ID 分页查询该词书下的单词，支持关键词搜索。
+      parameters:
+      - description: 词书 ID
+        in: path
+        name: bookId
+        required: true
+        type: integer
+      - description: 关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.DictionaryWordPage'
+              type: object
+      summary: 分页查询词书单词
+      tags:
+      - dictionary
+  /api/v1/dictionary/definitions:
+    get:
+      description: 根据英文拼写查询中文释义，可选择精确匹配或模糊匹配。
+      parameters:
+      - description: 拼写
+        in: query
+        name: spelling
+        required: true
+        type: string
+      - description: 是否精确匹配
+        in: query
+        name: exact
+        type: boolean
+      - description: 返回数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.DictionaryLookupResult'
+              type: object
+      summary: 按单词查询释义
+      tags:
+      - dictionary
+  /api/v1/dictionary/words:
+    get:
+      description: 按关键词、拼写、释义、词书和词频范围分页查询单词。
+      parameters:
+      - description: 关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 拼写
+        in: query
+        name: spelling
+        type: string
+      - description: 释义
+        in: query
+        name: paraphrase
+        type: string
+      - description: 词书 ID
+        in: query
+        name: bookId
+        type: integer
+      - description: 最小词频
+        in: query
+        name: minFrequency
+        type: number
+      - description: 最大词频
+        in: query
+        name: maxFrequency
+        type: number
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.DictionaryWordPage'
+              type: object
+      summary: 分页查询单词
+      tags:
+      - dictionary
+  /api/v1/dictionary/words/{wordId}:
+    get:
+      description: 根据单词 ID 获取单词基础信息、所属词书和例句。
+      parameters:
+      - description: 单词 ID
+        in: path
+        name: wordId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.DictionaryWordDetail'
+              type: object
+      summary: 获取单词详情
+      tags:
+      - dictionary
+  /api/v1/dictionary/words/by-spelling/{spelling}:
+    get:
+      description: 根据英文拼写精确获取单词基础信息、所属词书和例句。
+      parameters:
+      - description: 拼写
+        in: path
+        name: spelling
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.DictionaryWordDetail'
+              type: object
+      summary: 按拼写获取单词详情
+      tags:
+      - dictionary
+  /api/v1/essay/records/{recordId}/results:
+    get:
+      description: 按 recordId 查询当前登录用户某次考试关联的作文评分结果列表。
+      parameters:
+      - description: 答题记录 ID
+        in: path
+        name: recordId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.EssayResultResponse'
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查询考试的作文评分结果
+      tags:
+      - essay
+  /api/v1/essay/results:
+    get:
+      description: 分页查询当前登录用户不关联考试记录的独立作文评分结果。
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.EssayResultPage'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查询独立作文评分历史
+      tags:
+      - essay
+  /api/v1/essay/results/{taskId}:
+    get:
+      description: 按 taskId 从数据库查询当前登录用户的作文评分结果。
+      parameters:
+      - description: 任务 ID
+        in: path
+        name: taskId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.EssayResultResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查询作文评分结果
+      tags:
+      - essay
+  /api/v1/essay/tasks:
+    post:
+      consumes:
+      - application/json
+      description: 提交作文题目与正文，创建异步批改任务，返回 taskId 与初始状态。
+      parameters:
+      - description: 作文批改任务参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateEssayTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.EssayTaskCreatedResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 创建作文批改任务
+      tags:
+      - essay
+  /api/v1/essay/tasks/{taskId}:
+    get:
+      description: 按 taskId 查询当前登录用户的作文批改任务状态与结果。
+      parameters:
+      - description: 任务 ID
+        in: path
+        name: taskId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.EssayTask'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查询作文批改任务
+      tags:
+      - essay
+  /api/v1/ocr:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传图片并调用 GLM OCR，返回识别出的文字与版面信息。
+      parameters:
+      - description: 图片文件，支持 jpg/jpeg/png/webp，单张不超过 10MB
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.OcrResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Body'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 图片 OCR 识别
+      tags:
+      - agent
+  /api/v1/paper-types:
+    get:
+      description: 返回全部可用的试卷类型。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: 获取试卷类型列表
+      tags:
+      - paper
+  /api/v1/papers:
+    get:
+      description: 分页查询试卷；默认 items 为 Paper。传 include=rating 时 items 为 PaperWithRating（含评分与题量）。
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      - description: 试卷类型
+        in: query
+        name: type
+        type: string
+      - description: 年份
+        in: query
+        name: year
+        type: integer
+      - description: 传 rating 返回评分信息
+        in: query
+        name: include
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.PaperPage'
+              type: object
+      summary: 获取试卷列表
+      tags:
+      - paper
+  /api/v1/papers/{paperId}/answers:
+    get:
+      description: 返回指定试卷的全部答案，并按答案序号排序。
+      parameters:
+      - description: 试卷 ID
+        in: path
+        name: paperId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.AnswersResponse'
+              type: object
+      summary: 获取试卷答案
+      tags:
+      - question
+  /api/v1/papers/{paperId}/intro:
+    get:
+      description: 返回指定试卷的题型、时长、难度与各部分题量。
+      parameters:
+      - description: 试卷 ID
+        in: path
+        name: paperId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.PaperIntro'
+              type: object
+      summary: 获取试卷简介
+      tags:
+      - paper
+  /api/v1/papers/{paperId}/questions:
+    get:
+      description: 返回指定试卷下的全部题目；默认 data 为题目数组，传 groupBy=part 时 data 为 ExamQuestion
+        分组结构。
+      parameters:
+      - description: 试卷 ID
+        in: path
+        name: paperId
+        required: true
+        type: integer
+      - description: 题型
+        in: query
+        name: type
+        type: string
+      - description: 传 part 按 Part 分组
+        in: query
+        name: groupBy
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Question'
+                  type: array
+              type: object
+      summary: 按试卷获取题目
+      tags:
+      - question
+  /api/v1/points/balance:
+    get:
+      description: 返回当前登录用户的积分余额。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.PointsBalanceResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查询积分余额
+      tags:
+      - points
+  /api/v1/points/checkin-status:
+    get:
+      description: 返回当前登录用户今日是否已签到。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.CheckinStatusResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查询签到状态
+      tags:
+      - points
+  /api/v1/points/daily-checkin:
+    post:
+      description: 领取当日签到积分，同日重复领取幂等返回 granted=false。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.PointsGrantResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 每日签到
+      tags:
+      - points
+  /api/v1/points/transactions:
+    get:
+      description: 分页返回当前登录用户的积分流水，按时间倒序。
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.PointsTransactionPage'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查询积分流水
+      tags:
+      - points
+  /api/v1/questions/practice:
+    post:
+      consumes:
+      - application/json
+      description: 无需登录，返回随机试卷中的指定题型、题组和答案。
+      parameters:
+      - description: 专项训练参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.PracticeQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.PracticeQuestionResponse'
+              type: object
+      summary: 获取专项训练题目
+      tags:
+      - question
+  /api/v1/records:
+    get:
+      description: 按最近天数分页获取当前登录用户的答题记录。
+      parameters:
+      - description: 最近天数
+        in: query
+        name: days
+        type: integer
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.RecordPage'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取答题记录列表
+      tags:
+      - record
+    post:
+      consumes:
+      - application/json
+      description: 为当前登录用户创建一条答题记录，返回 recordId。
+      parameters:
+      - description: 答题记录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.CreateRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.RecordCreatedResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 保存答题记录
+      tags:
+      - record
+  /api/v1/records/{recordId}:
+    put:
+      consumes:
+      - application/json
+      description: 更新当前登录用户已有答题记录的作答结果。
+      parameters:
+      - description: 记录 ID
+        in: path
+        name: recordId
+        required: true
+        type: string
+      - description: 答题记录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.UpdateRecordRequest'
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: 更新答题记录
+      tags:
+      - record
+  /api/v1/users/me:
+    get:
+      description: 根据 token 获取当前登录用户信息。
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.UserInfoResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - user
+  /api/v1/users/me/favorite-words:
+    get:
+      description: 分页获取当前用户收藏的单词，并返回词库释义、音标等信息。
+      parameters:
+      - description: 关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.FavoriteWordPage'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取收藏单词
+      tags:
+      - word_favorite
+    post:
+      consumes:
+      - application/json
+      description: 收藏词库中的单词。
+      parameters:
+      - description: 收藏参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.FavoriteWordRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.WordFavoriteRequest'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 收藏单词
+      tags:
+      - word_favorite
+  /api/v1/users/me/favorite-words/{wordId}:
+    delete:
+      description: 取消收藏词库中的单词。
+      parameters:
+      - description: 单词 ID
+        in: path
+        name: wordId
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: 取消收藏单词
+      tags:
+      - word_favorite
+    get:
+      description: 检查当前用户是否已收藏指定单词。
+      parameters:
+      - description: 单词 ID
+        in: path
+        name: wordId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.FavoriteStatusResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 检查单词是否已收藏
+      tags:
+      - word_favorite
+  /api/word/favorites:
+    delete:
+      description: 取消收藏词库中的单词。支持 wordid 或 word 查询参数；不存在也返回成功。
+      parameters:
+      - description: 单词 ID
+        in: query
+        name: wordid
+        type: integer
+      - description: 英文拼写
+        in: query
+        name: word
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 取消收藏单词
+      tags:
+      - word
+    get:
+      description: 分页获取当前用户收藏的单词，并返回词库释义、音标等信息。
+      parameters:
+      - description: 在单词拼写和释义中搜索
+        in: query
+        name: keyword
+        type: string
+      - description: 页码，默认 1
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量，默认 20，最大 100
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CollectedWordList'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 分页获取收藏单词
+      tags:
+      - word
+    post:
+      consumes:
+      - application/json
+      description: 收藏词库中的单词。优先使用 wordid；未传 wordid 时按 word 精确匹配 tb_vocabulary.spelling。
+      parameters:
+      - description: 收藏参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.WordFavoriteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Body'
+      security:
+      - ApiKeyAuth: []
+      summary: 收藏单词
+      tags:
+      - word
+  /api/word/favorites/check:
+    get:
+      description: 检查当前用户是否已收藏指定单词。支持 wordid 或 word 查询参数。
+      parameters:
+      - description: 单词 ID
+        in: query
+        name: wordid
+        type: integer
+      - description: 英文拼写
+        in: query
+        name: word
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  type: boolean
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 检查单词是否已收藏
+      tags:
+      - word
+  /health:
+    get:
+      description: 返回服务状态和数据库是否启用。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.HealthResponse'
+              type: object
+      summary: 健康检查
+      tags:
+      - health
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
