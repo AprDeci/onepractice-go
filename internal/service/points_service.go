@@ -61,7 +61,9 @@ func (s *PointsService) CostOf(ctx context.Context, action string) (int64, error
 		return 0, ErrDatabaseDisabled
 	}
 
-	now := time.Now().In(pointLocation)
+	// 时间区间比较必须与写入时区一致：GORM 与规则均按进程本地时区落库，
+	// 若这里改用固定的 pointLocation，sqlite 以带 offset 的文本做字典序比较会错排。
+	now := time.Now()
 	var rule model.PointRule
 	err := s.db.WithContext(ctx).
 		Where("action = ? and enabled = ? and effective_from <= ? and (effective_to is null or effective_to >= ?)",
@@ -368,7 +370,8 @@ func (s *PointsService) SweepExpiredReserved(ctx context.Context) (int, error) {
 	if timeout <= 0 {
 		timeout = 10
 	}
-	cutoff := time.Now().In(pointLocation).Add(-time.Duration(timeout) * time.Minute)
+	// 与 created_at 的写入时区保持一致，理由同 CostOf。
+	cutoff := time.Now().Add(-time.Duration(timeout) * time.Minute)
 
 	var rows []model.PointTransaction
 	if err := s.db.WithContext(ctx).
