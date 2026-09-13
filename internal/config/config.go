@@ -1,17 +1,35 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Config struct {
-	Server   ServerConfig
-	Log      LogConfig
-	Database DatabaseConfig
-	Redis    RedisConfig
-	Auth     AuthConfig
-	Mail     MailConfig
-	LLM      LLMConfig
-	Cron     CronConfig `mapstructure:"cron"`
-	Points   PointsConfig
+	Server    ServerConfig
+	Log       LogConfig
+	Database  DatabaseConfig
+	Redis     RedisConfig
+	Auth      AuthConfig
+	Mail      MailConfig
+	LLM       LLMConfig
+	Cron      CronConfig `mapstructure:"cron"`
+	Points    PointsConfig
+	Turnstile TurnstileConfig
+}
+
+// TurnstileConfig 描述 Cloudflare Turnstile 人机校验配置。
+type TurnstileConfig struct {
+	Enabled   bool   `mapstructure:"enabled"`
+	SecretKey string `mapstructure:"secret_key"`
+}
+
+// Validate 仅在校验开启时要求提供密钥；未开启时允许留空以安全跳过。
+func (c TurnstileConfig) Validate() error {
+	if c.Enabled && strings.TrimSpace(c.SecretKey) == "" {
+		return fmt.Errorf("turnstile.secret_key must be set when turnstile.enabled is true")
+	}
+	return nil
 }
 
 // PointsConfig 描述积分系统的默认单价与预留订单超时时间。

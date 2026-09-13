@@ -55,7 +55,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "token", "x-silent-error"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "token", "x-silent-error", "X-Turnstile-Token"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
@@ -82,7 +82,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	registerWordFavoriteRoutes(v1Protected, deps.V1WordFavorite)
 	registerEssayRoutes(v1Protected, deps.V1Essay)
 	registerAgentRoutes(v1Protected, deps.V1Agent)
-	registerPointsRoutes(v1Protected, deps.V1Points)
+	registerPointsRoutes(v1Protected, deps.V1Points, deps.TurnstileVerifier)
 
 	legacy := r.Group("/api")
 	legacy.Use(middleware.TimeoutMiddleware(5 * time.Second))

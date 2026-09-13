@@ -94,6 +94,7 @@ func (h *PointsHandler) ListTransactions(c *gin.Context) {
 // @Tags points
 // @Produce json
 // @Security ApiKeyAuth
+// @Param X-Turnstile-Token header string false "人机校验 token（开启 turnstile 时必填）"
 // @Success 200 {object} response.Body{data=apiv1.PointsGrantResponse}
 // @Router /api/v1/points/daily-checkin [post]
 func (h *PointsHandler) DailyCheckin(c *gin.Context) {

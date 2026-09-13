@@ -53,6 +53,9 @@ func NewWithConfig(cfg config.Config) (*App, error) {
 	if err := cfg.Points.Validate(); err != nil {
 		return nil, fmt.Errorf("配置校验失败: %w", err)
 	}
+	if err := cfg.Turnstile.Validate(); err != nil {
+		return nil, fmt.Errorf("配置校验失败: %w", err)
+	}
 
 	database, err := openDatabase(cfg.Database)
 	if err != nil {

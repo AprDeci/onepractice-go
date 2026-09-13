@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"onepractice-golang/internal/agent"
 	"onepractice-golang/internal/agent/llm"
+	"onepractice-golang/internal/common/turnstile"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/handler"
 	handlerv1 "onepractice-golang/internal/handler/v1"
@@ -34,6 +35,9 @@ type Deps struct {
 	V1Agent            *handlerv1.AgentHandler
 	V1Points           *handlerv1.PointsHandler
 
+	// TurnstileVerifier 供需要人机校验的路由按需挂载。
+	TurnstileVerifier *turnstile.Verifier
+
 	// Points 供进程级后台任务（如预扣补偿 cron）复用。
 	Points *service.PointsService
 }
@@ -50,6 +54,7 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 	if essayService != nil {
 		essayService.SetPoints(pointsSvc)
 	}
+	turnstileVerifier := turnstile.NewVerifier(cfg.Turnstile.Enabled, cfg.Turnstile.SecretKey)
 
 	return Deps{
 		LegacyUser:         handler.NewUserHandler(userSvc),
@@ -70,6 +75,7 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 		V1Essay:            handlerv1.NewEssayHandler(essayService),
 		V1Agent:            handlerv1.NewAgentHandler(llm.NewGlmClient(cfg.LLM.GlmKey), pointsSvc),
 		V1Points:           handlerv1.NewPointsHandler(pointsSvc),
+		TurnstileVerifier:  turnstileVerifier,
 		Points:             pointsSvc,
 	}
 }

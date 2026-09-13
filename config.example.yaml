@@ -57,3 +57,8 @@ cron:
   points_reserve_expiry:
     enabled: true
     expression: "*/5 * * * *"
+
+turnstile:
+  # 开启后，签到接口必须携带有效的 Cloudflare Turnstile token。
+  enabled: false
+  secret_key: ""

@@ -53,6 +53,10 @@ func Load() Config {
 			},
 			ReserveTimeoutMins: v.GetInt("points.reserve_timeout_minutes"),
 		},
+		Turnstile: TurnstileConfig{
+			Enabled:   v.GetBool("turnstile.enabled"),
+			SecretKey: v.GetString("turnstile.secret_key"),
+		},
 	}
 	// chat 模型列表为动态 map，逐字段读取无法覆盖，需整体反序列化。
 	_ = v.UnmarshalKey("llm.models", &cfg.LLM.Models)
@@ -87,6 +91,8 @@ func bindEnvs(v *viper.Viper) {
 	bindEnv(v, "points.defaults.essay_cost", "POINTS_ESSAY_COST")
 	bindEnv(v, "points.defaults.daily_login_reward", "POINTS_DAILY_LOGIN_REWARD")
 	bindEnv(v, "points.reserve_timeout_minutes", "POINTS_RESERVE_TIMEOUT_MINUTES")
+	bindEnv(v, "turnstile.enabled", "TURNSTILE_ENABLED")
+	bindEnv(v, "turnstile.secret_key", "TURNSTILE_SECRET_KEY")
 }
 
 func bindEnv(v *viper.Viper, key string, envNames ...string) {
@@ -133,4 +139,6 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("points.defaults.essay_cost", 2)
 	v.SetDefault("points.defaults.daily_login_reward", 6)
 	v.SetDefault("points.reserve_timeout_minutes", 10)
+	v.SetDefault("turnstile.enabled", false)
+	v.SetDefault("turnstile.secret_key", "")
 }
