@@ -19,7 +19,7 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates tzdata && addgroup -S app && adduser -S app -G app
 
 COPY --from=builder /out/onepractice-api /app/onepractice-api
-COPY openapi /app/openapi
+COPY docs /app/docs
 
 USER app
 
