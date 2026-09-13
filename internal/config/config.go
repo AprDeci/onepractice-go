@@ -1,17 +1,78 @@
 package config
 
 import (
+	"fmt"
 	"strings"
-
-	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	Redis    RedisConfig
-	Auth     AuthConfig
-	Mail     MailConfig
+	Server    ServerConfig
+	Log       LogConfig
+	Database  DatabaseConfig
+	Redis     RedisConfig
+	Auth      AuthConfig
+	Mail      MailConfig
+	LLM       LLMConfig
+	Cron      CronConfig `mapstructure:"cron"`
+	Points    PointsConfig
+	Turnstile TurnstileConfig
+}
+
+// TurnstileConfig 描述 Cloudflare Turnstile 人机校验配置。
+type TurnstileConfig struct {
+	Enabled   bool   `mapstructure:"enabled"`
+	SecretKey string `mapstructure:"secret_key"`
+}
+
+// Validate 仅在校验开启时要求提供密钥；未开启时允许留空以安全跳过。
+func (c TurnstileConfig) Validate() error {
+	if c.Enabled && strings.TrimSpace(c.SecretKey) == "" {
+		return fmt.Errorf("turnstile.secret_key must be set when turnstile.enabled is true")
+	}
+	return nil
+}
+
+// PointsConfig 描述积分系统的默认单价与预留订单超时时间。
+type PointsConfig struct {
+	Defaults           PointsDefaultsConfig `mapstructure:"defaults"`
+	ReserveTimeoutMins int                  `mapstructure:"reserve_timeout_minutes"`
+}
+
+// PointsDefaultsConfig 是未配置 point_rules 时各动作的积分单价默认值。
+type PointsDefaultsConfig struct {
+	OCRCost          int64 `mapstructure:"ocr_cost"`
+	EssayCost        int64 `mapstructure:"essay_cost"`
+	DailyLoginReward int64 `mapstructure:"daily_login_reward"`
+}
+
+// Validate 校验积分默认单价必须为正数，避免出现零价或负价扣费。
+func (c PointsConfig) Validate() error {
+	if c.Defaults.OCRCost <= 0 {
+		return fmt.Errorf("points.defaults.ocr_cost must be > 0")
+	}
+	if c.Defaults.EssayCost <= 0 {
+		return fmt.Errorf("points.defaults.essay_cost must be > 0")
+	}
+	if c.Defaults.DailyLoginReward <= 0 {
+		return fmt.Errorf("points.defaults.daily_login_reward must be > 0")
+	}
+	return nil
+}
+
+// LLMConfig 描述 chat 模型列表与默认使用的模型；GlmKey 仅用于 OCR。
+type LLMConfig struct {
+	// GlmKey 供 OCR（layout_parsing）使用，与 chat 模型列表相互独立。
+	GlmKey  string                    `mapstructure:"glm_key"`
+	Default string                    `mapstructure:"default"`
+	Models  map[string]LLMModelConfig `mapstructure:"models"`
+}
+
+// LLMModelConfig 描述一个 OpenAI 兼容 chat 模型的接入参数。
+type LLMModelConfig struct {
+	BaseURL     string   `mapstructure:"base_url"`
+	Model       string   `mapstructure:"model"`
+	APIKey      string   `mapstructure:"api_key"`
+	Temperature *float32 `mapstructure:"temperature"`
 }
 
 type ServerConfig struct {
@@ -41,84 +102,24 @@ type MailConfig struct {
 	Disabled bool
 }
 
-func Load() Config {
-	v := viper.New()
-	setDefaults(v)
-	bindEnvs(v)
-	loadConfigFile(v)
-	v.SetEnvPrefix("ONEPRACTICE")
-	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	v.AutomaticEnv()
-
-	var cfg = Config{
-		Server:   ServerConfig{Port: v.GetString("server.port")},
-		Database: DatabaseConfig{DSN: v.GetString("database.dsn")},
-		Redis: RedisConfig{
-			Addr:     v.GetString("redis.addr"),
-			Username: v.GetString("redis.username"),
-			Password: v.GetString("redis.password"),
-			DB:       v.GetInt("redis.db"),
-			Disabled: v.GetBool("redis.disabled"),
-		},
-		Auth: AuthConfig{
-			TokenName: v.GetString("auth.token_name"),
-			Timeout:   v.GetInt64("auth.timeout"),
-		},
-		Mail: MailConfig{
-			APIKey:   v.GetString("mail.api_key"),
-			From:     v.GetString("mail.from"),
-			Disabled: v.GetBool("mail.disabled"),
-		},
-	}
-	return cfg
+// LogConfig 描述日志目录、级别和输出方式。
+type LogConfig struct {
+	Dir           string `mapstructure:"dir"`
+	Level         string `mapstructure:"level"`
+	Console       bool   `mapstructure:"console"`
+	AddSource     bool   `mapstructure:"add_source"`
+	RetentionDays int    `mapstructure:"retention_days"`
 }
 
-func bindEnvs(v *viper.Viper) {
-	bindEnv(v, "server.port", "SERVER_PORT")
-	bindEnv(v, "database.dsn", "MYSQL_DSN")
-	bindEnv(v, "redis.addr", "REDIS_ADDR")
-	bindEnv(v, "redis.username", "REDIS_USERNAME")
-	bindEnv(v, "redis.password", "REDIS_PASSWORD")
-	bindEnv(v, "redis.db", "REDIS_DB")
-	bindEnv(v, "redis.disabled", "REDIS_DISABLED")
-	bindEnv(v, "auth.token_name", "SA_TOKEN_NAME")
-	bindEnv(v, "auth.timeout", "SA_TOKEN_TIMEOUT")
-	bindEnv(v, "mail.api_key", "SENDFLARE_API_KEY")
-	bindEnv(v, "mail.from", "SENDFLARE_FROM")
-	bindEnv(v, "mail.disabled", "SENDFLARE_DISABLED")
+// CORSConfig 描述允许跨域访问的来源和凭证策略。
+type CORSConfig struct {
+	AllowedOrigins   []string `mapstructure:"allowed_origins"`
+	AllowCredentials bool     `mapstructure:"allow_credentials"`
 }
 
-func bindEnv(v *viper.Viper, key string, envNames ...string) {
-	args := append([]string{key}, envNames...)
-	args = append(args, "ONEPRACTICE_"+strings.ToUpper(strings.ReplaceAll(key, ".", "_")))
-	_ = v.BindEnv(args...)
+type CronTaskConfig struct {
+	Enabled    bool   `mapstructure:"enabled"`
+	Expression string `mapstructure:"expression"`
 }
 
-func loadConfigFile(v *viper.Viper) {
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
-	v.AddConfigPath(".")
-	v.AddConfigPath("./config")
-	v.AddConfigPath("./golang")
-	v.AddConfigPath("./golang/config")
-
-	if path := v.GetString("config.file"); path != "" {
-		v.SetConfigFile(path)
-	}
-
-	_ = v.ReadInConfig()
-}
-
-func setDefaults(v *viper.Viper) {
-	v.SetDefault("config.file", "")
-	v.SetDefault("server.port", "8080")
-	v.SetDefault("database.dsn", "root:Luchen1122@tcp(fn.aprdec.top)/onepractice?charset=utf8&parseTime=True&loc=Local")
-	v.SetDefault("redis.addr", "fn.aprdec.top:6379")
-	v.SetDefault("redis.db", 0)
-	v.SetDefault("redis.disabled", false)
-	v.SetDefault("auth.token_name", "token")
-	v.SetDefault("auth.timeout", int64(15*24*60*60))
-	v.SetDefault("mail.disabled", true)
-	v.SetDefault("mail.api_key", "")
-	v.SetDefault("mail.from", "")
-}
+type CronConfig map[string]CronTaskConfig

@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"strconv"
 
+	"onepractice-golang/internal/common/apperror"
+	"onepractice-golang/internal/common/response"
 	"onepractice-golang/internal/dto"
-	"onepractice-golang/internal/response"
 	"onepractice-golang/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +28,7 @@ func NewRecordHandler(service *service.RecordService) *RecordHandler {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param request body dto.RecordRequest true "答题记录参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=string}
 // @Router /api/record/save [post]
 func (h *RecordHandler) Save(c *gin.Context) {
 	userID, ok := loginID(c)
@@ -35,12 +37,21 @@ func (h *RecordHandler) Save(c *gin.Context) {
 	}
 	var req dto.RecordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.ErrorEnum(c, response.ErrParamInvalid)
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 	recordID, err := h.service.Create(userID, req)
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrTokenInvalid):
+			response.Error(c, apperror.New(apperror.CodeUnauthorized, "Token失效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
 	response.Success(c, recordID)
@@ -55,7 +66,7 @@ func (h *RecordHandler) Save(c *gin.Context) {
 // @Param days query int false "最近天数"
 // @Param pageNum query int false "页码"
 // @Param pageSize query int false "每页大小"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]dto.UserExamRecord}
 // @Router /api/record/list [get]
 func (h *RecordHandler) List(c *gin.Context) {
 	userID, ok := loginID(c)
@@ -67,7 +78,14 @@ func (h *RecordHandler) List(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 	records, err := h.service.ListRecent(userID, days, pageNum, pageSize)
 	if err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
 	response.Success(c, records)
@@ -90,12 +108,19 @@ func (h *RecordHandler) Update(c *gin.Context) {
 	}
 	var req dto.RecordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.ErrorEnum(c, response.ErrParamInvalid)
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 	if err := h.service.Update(userID, req); err != nil {
-		writeError(c, err)
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
-	response.SuccessNoData(c)
+	response.Success(c, nil)
 }

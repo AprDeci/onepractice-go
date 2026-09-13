@@ -8,28 +8,9 @@ type RegisterRequest struct {
 	UserType    int    `json:"usertype"`
 }
 
-type RegisterResponse struct {
-	Username string `json:"username"`
-	Password string `json:"password,omitempty"`
-	Email    string `json:"email"`
-}
-
 type LoginRequest struct {
 	UsernameOrEmail string `json:"usernameorEmail" binding:"required"`
 	Password        string `json:"password" binding:"required"`
-}
-
-type LoginResponse struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Token    string `json:"token"`
-}
-
-type UserInfoResponse struct {
-	Username string `json:"username"`
-	UserType int    `json:"userType"`
-	Email    string `json:"email"`
 }
 
 type ResetPasswordRequest struct {

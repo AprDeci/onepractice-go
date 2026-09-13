@@ -19,3 +19,46 @@ mail:
   api_key: ""
   from: ""
   disabled: true
+
+llm:
+  # 智谱 GLM API Key，仅用于 OCR。
+  glm_key: ""
+  # 当前默认使用的 chat 模型（对应 models 的 key）。
+  default: "deepseek"
+  # chat 模型列表，可自由增删。
+  # api_key 可写在文件里，也可用环境变量覆盖：<NAME>_API_KEY，如 DEEPSEEK_API_KEY / GLM_API_KEY。
+  models:
+    deepseek:
+      base_url: "https://api.deepseek.com/v1"
+      model: "deepseek-v4-flash"
+      api_key: ""
+      temperature: 0.2
+    glm:
+      base_url: "https://open.bigmodel.cn/api/paas/v4"
+      model: "glm-4-flash"
+      api_key: ""
+      temperature: 0.2
+
+# 积分系统：point_rules 无匹配规则时使用以下默认单价。
+points:
+  defaults:
+    ocr_cost: 1
+    essay_cost: 2
+    daily_login_reward: 6
+  # 作文预扣超过该分钟数仍未结算，则由定时任务自动退款。
+  reserve_timeout_minutes: 10
+
+# 后台定时任务配置。键名需与代码注册的任务名一致。
+cron:
+  demo:
+    enabled: false
+    expression: "10 * * * *"
+  # 积分预扣补偿：扫描超时未结算的作文扣费并退款。
+  points_reserve_expiry:
+    enabled: true
+    expression: "*/5 * * * *"
+
+turnstile:
+  # 开启后，签到接口必须携带有效的 Cloudflare Turnstile token。
+  enabled: false
+  secret_key: ""

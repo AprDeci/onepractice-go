@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"strconv"
 	"strings"
@@ -32,7 +33,7 @@ func NewUserService(db *gorm.DB, captcha *CaptchaService) *UserService {
 	return &UserService{db: db, captcha: captcha}
 }
 
-func (s *UserService) Register(req dto.RegisterRequest) (dto.RegisterResponse, error) {
+func (s *UserService) Register(ctx context.Context, req dto.RegisterRequest) (dto.RegisterResponse, error) {
 	if s.db == nil {
 		return dto.RegisterResponse{}, ErrDatabaseDisabled
 	}
@@ -43,7 +44,7 @@ func (s *UserService) Register(req dto.RegisterRequest) (dto.RegisterResponse, e
 		return dto.RegisterResponse{}, ErrInvalidParam
 	}
 
-	if err := s.captcha.VerifyRegister(email, req.CaptchaCode); err != nil {
+	if err := s.captcha.VerifyRegister(ctx, email, req.CaptchaCode); err != nil {
 		return dto.RegisterResponse{}, err
 	}
 
@@ -73,7 +74,7 @@ func (s *UserService) Register(req dto.RegisterRequest) (dto.RegisterResponse, e
 		Email:    storedEmail,
 		UserType: req.UserType,
 	}
-	if err := s.db.Create(&user).Error; err != nil {
+	if err := s.db.WithContext(ctx).Create(&user).Error; err != nil {
 		return dto.RegisterResponse{}, err
 	}
 
@@ -133,7 +134,7 @@ func (s *UserService) Info(userID int64) (dto.UserInfoResponse, error) {
 	return dto.UserInfoResponse{Username: user.Username, UserType: user.UserType, Email: decryptEmail(user.Email)}, nil
 }
 
-func (s *UserService) ResetPassword(req dto.ResetPasswordRequest) error {
+func (s *UserService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequest) error {
 	if s.db == nil {
 		return ErrDatabaseDisabled
 	}
@@ -143,7 +144,7 @@ func (s *UserService) ResetPassword(req dto.ResetPasswordRequest) error {
 		return ErrRedisDisabled
 	}
 
-	if err := s.captcha.ConsumeResetToken(email, req.ResetToken); err != nil {
+	if err := s.captcha.ConsumeResetToken(ctx, email, req.ResetToken); err != nil {
 		return err
 	}
 
@@ -155,7 +156,7 @@ func (s *UserService) ResetPassword(req dto.ResetPasswordRequest) error {
 	if err != nil {
 		return err
 	}
-	return s.db.Model(&model.User{}).Where("email in ?", []string{email, encEmail}).Update("password", passwordHash).Error
+	return s.db.WithContext(ctx).Model(&model.User{}).Where("email in ?", []string{email, encEmail}).Update("password", passwordHash).Error
 }
 
 func LoginIDFromToken(token string) (int64, error) {

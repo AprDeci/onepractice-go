@@ -26,15 +26,3 @@ func (r *PageQuery) Normalize() {
 func (r PageQuery) Offset() int {
 	return (r.Page - 1) * r.PageSize
 }
-
-type PageResult[T any] struct {
-	Total int64 `json:"total"`
-	Data  []T   `json:"data"`
-}
-
-type PageListResult[T any] struct {
-	List     []T   `json:"list"`
-	Total    int64 `json:"total"`
-	Page     int   `json:"page"`
-	PageSize int   `json:"page_size"`
-}

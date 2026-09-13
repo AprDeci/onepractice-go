@@ -20,6 +20,8 @@ services:
       SENDFLARE_DISABLED: ${SENDFLARE_DISABLED:-true}
       SENDFLARE_API_KEY: ${SENDFLARE_API_KEY:-}
       SENDFLARE_FROM: ${SENDFLARE_FROM:-}
+      GLM_API_KEY: ${GLM_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       TZ: Asia/Shanghai
 
 networks:

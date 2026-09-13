@@ -2,11 +2,11 @@ package handler
 
 import (
 	"errors"
-	"net/http"
 	"strconv"
 
+	"onepractice-golang/internal/common/apperror"
+	"onepractice-golang/internal/common/response"
 	"onepractice-golang/internal/dto"
-	"onepractice-golang/internal/response"
 	"onepractice-golang/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +26,7 @@ func NewQuestionHandler(service *service.QuestionService) *QuestionHandler {
 // @Tags question
 // @Produce json
 // @Param id query int true "试卷 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]model.Question}
 // @Router /api/question/getById [get]
 func (h *QuestionHandler) ByPaperID(c *gin.Context) {
 	id, ok := queryInt(c, "id")
@@ -36,7 +36,16 @@ func (h *QuestionHandler) ByPaperID(c *gin.Context) {
 
 	questions, err := h.service.ByPaperID(id)
 	if err != nil {
-		response.Error(c, 500, err.Error())
+		switch {
+		case errors.Is(err, service.ErrInvalidParam), errors.Is(err, service.ErrInvalidQuestionType), errors.Is(err, service.ErrInvalidPracticeUnitCount):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrPracticeQuestionsNotFound):
+			response.Error(c, apperror.New(apperror.CodeNotFound, "资源不存在"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
 	response.Success(c, questions)
@@ -49,7 +58,7 @@ func (h *QuestionHandler) ByPaperID(c *gin.Context) {
 // @Produce json
 // @Param id query int true "试卷 ID"
 // @Param type query string true "题型"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=[]model.Question}
 // @Router /api/question/getByType [get]
 func (h *QuestionHandler) ByPaperIDAndType(c *gin.Context) {
 	id, ok := queryInt(c, "id")
@@ -59,7 +68,16 @@ func (h *QuestionHandler) ByPaperIDAndType(c *gin.Context) {
 
 	questions, err := h.service.ByPaperIDAndType(id, c.Query("type"))
 	if err != nil {
-		response.Error(c, 500, err.Error())
+		switch {
+		case errors.Is(err, service.ErrInvalidParam), errors.Is(err, service.ErrInvalidQuestionType), errors.Is(err, service.ErrInvalidPracticeUnitCount):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrPracticeQuestionsNotFound):
+			response.Error(c, apperror.New(apperror.CodeNotFound, "资源不存在"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
 	response.Success(c, questions)
@@ -71,7 +89,7 @@ func (h *QuestionHandler) ByPaperIDAndType(c *gin.Context) {
 // @Tags question
 // @Produce json
 // @Param id query int true "试卷 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.ExamQuestion}
 // @Router /api/question/getAllByIdSplitByPart [get]
 func (h *QuestionHandler) SplitByPart(c *gin.Context) {
 	id, ok := queryInt(c, "id")
@@ -81,7 +99,16 @@ func (h *QuestionHandler) SplitByPart(c *gin.Context) {
 
 	questions, err := h.service.SplitByPart(id)
 	if err != nil {
-		response.Error(c, 500, err.Error())
+		switch {
+		case errors.Is(err, service.ErrInvalidParam), errors.Is(err, service.ErrInvalidQuestionType), errors.Is(err, service.ErrInvalidPracticeUnitCount):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrPracticeQuestionsNotFound):
+			response.Error(c, apperror.New(apperror.CodeNotFound, "资源不存在"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
 	response.Success(c, questions)
@@ -93,7 +120,7 @@ func (h *QuestionHandler) SplitByPart(c *gin.Context) {
 // @Tags question
 // @Produce json
 // @Param id query int true "试卷 ID"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.AnswersResponse}
 // @Router /api/question/getAnswersByPaperId [get]
 func (h *QuestionHandler) Answers(c *gin.Context) {
 	id, ok := queryInt(c, "id")
@@ -103,7 +130,16 @@ func (h *QuestionHandler) Answers(c *gin.Context) {
 
 	answers, err := h.service.Answers(id)
 	if err != nil {
-		response.Error(c, 500, err.Error())
+		switch {
+		case errors.Is(err, service.ErrInvalidParam), errors.Is(err, service.ErrInvalidQuestionType), errors.Is(err, service.ErrInvalidPracticeUnitCount):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, service.ErrPracticeQuestionsNotFound):
+			response.Error(c, apperror.New(apperror.CodeNotFound, "资源不存在"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
 	response.Success(c, answers)
@@ -116,26 +152,26 @@ func (h *QuestionHandler) Answers(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body dto.PracticeQuestionRequest true "专项训练参数"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.PracticeQuestionResponse}
 // @Router /api/question/practice [post]
 func (h *QuestionHandler) Practice(c *gin.Context) {
 	var req dto.PracticeQuestionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	questions, err := h.service.Practice(req.QuestionType, req.UnitCount)
 	if err != nil {
 		switch {
-		case errors.Is(err, service.ErrInvalidQuestionType):
-			response.Error(c, http.StatusBadRequest, err.Error())
-		case errors.Is(err, service.ErrInvalidPracticeUnitCount):
-			response.Error(c, http.StatusBadRequest, err.Error())
+		case errors.Is(err, service.ErrInvalidParam), errors.Is(err, service.ErrInvalidQuestionType), errors.Is(err, service.ErrInvalidPracticeUnitCount):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		case errors.Is(err, service.ErrPracticeQuestionsNotFound):
-			response.Error(c, http.StatusNotFound, err.Error())
+			response.Error(c, apperror.New(apperror.CodeNotFound, "资源不存在"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
 		default:
-			response.Error(c, http.StatusInternalServerError, err.Error())
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
 		}
 		return
 	}
@@ -145,7 +181,7 @@ func (h *QuestionHandler) Practice(c *gin.Context) {
 func queryInt(c *gin.Context, key string) (int, bool) {
 	value, err := strconv.Atoi(c.Query(key))
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, key+" must be integer")
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, key+" must be integer"))
 		return 0, false
 	}
 	return value, true

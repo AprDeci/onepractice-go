@@ -2,10 +2,10 @@ package handler
 
 import (
 	"errors"
-	"net/http"
 
+	"onepractice-golang/internal/common/apperror"
+	"onepractice-golang/internal/common/response"
 	"onepractice-golang/internal/dto"
-	"onepractice-golang/internal/response"
 	"onepractice-golang/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -37,15 +37,23 @@ func (h *WordFavoriteHandler) Add(c *gin.Context) {
 
 	var req dto.WordFavoriteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	if err := h.service.Add(userID, req); err != nil {
-		h.writeWordFavoriteError(c, err)
+		if errors.Is(err, service.ErrWordNotFound) {
+			response.Error(c, apperror.New(apperror.CodeNotFound, "word not found"))
+		} else if errors.Is(err, service.ErrInvalidParam) {
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		} else if errors.Is(err, service.ErrDatabaseDisabled) {
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		} else {
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
-	response.SuccessNoData(c)
+	response.Success(c, nil)
 }
 
 // Remove 取消收藏单词。
@@ -66,15 +74,23 @@ func (h *WordFavoriteHandler) Remove(c *gin.Context) {
 
 	var req dto.WordFavoriteRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	if err := h.service.Remove(userID, req); err != nil {
-		h.writeWordFavoriteError(c, err)
+		if errors.Is(err, service.ErrWordNotFound) {
+			response.Error(c, apperror.New(apperror.CodeNotFound, "word not found"))
+		} else if errors.Is(err, service.ErrInvalidParam) {
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		} else if errors.Is(err, service.ErrDatabaseDisabled) {
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		} else {
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
-	response.SuccessNoData(c)
+	response.Success(c, nil)
 }
 
 // Check 检查单词是否已收藏。
@@ -85,7 +101,7 @@ func (h *WordFavoriteHandler) Remove(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Param wordid query int false "单词 ID"
 // @Param word query string false "英文拼写"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=bool}
 // @Router /api/word/favorites/check [get]
 func (h *WordFavoriteHandler) Check(c *gin.Context) {
 	userID, ok := loginID(c)
@@ -95,13 +111,21 @@ func (h *WordFavoriteHandler) Check(c *gin.Context) {
 
 	var req dto.WordFavoriteRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	has, err := h.service.Has(userID, req)
 	if err != nil {
-		h.writeWordFavoriteError(c, err)
+		if errors.Is(err, service.ErrWordNotFound) {
+			response.Error(c, apperror.New(apperror.CodeNotFound, "word not found"))
+		} else if errors.Is(err, service.ErrInvalidParam) {
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		} else if errors.Is(err, service.ErrDatabaseDisabled) {
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		} else {
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
 	response.Success(c, has)
@@ -116,7 +140,7 @@ func (h *WordFavoriteHandler) Check(c *gin.Context) {
 // @Param keyword query string false "在单词拼写和释义中搜索"
 // @Param page query int false "页码，默认 1"
 // @Param page_size query int false "每页数量，默认 20，最大 100"
-// @Success 200 {object} response.Body
+// @Success 200 {object} response.Body{data=dto.CollectedWordList}
 // @Router /api/word/favorites [get]
 func (h *WordFavoriteHandler) List(c *gin.Context) {
 	userID, ok := loginID(c)
@@ -126,22 +150,22 @@ func (h *WordFavoriteHandler) List(c *gin.Context) {
 
 	var req dto.WordFavoriteListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
 
 	result, err := h.service.List(userID, req)
 	if err != nil {
-		h.writeWordFavoriteError(c, err)
+		if errors.Is(err, service.ErrWordNotFound) {
+			response.Error(c, apperror.New(apperror.CodeNotFound, "word not found"))
+		} else if errors.Is(err, service.ErrInvalidParam) {
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		} else if errors.Is(err, service.ErrDatabaseDisabled) {
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		} else {
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
 		return
 	}
 	response.Success(c, result)
-}
-
-func (h *WordFavoriteHandler) writeWordFavoriteError(c *gin.Context, err error) {
-	if errors.Is(err, service.ErrWordNotFound) {
-		response.Error(c, http.StatusNotFound, "word not found")
-		return
-	}
-	writeError(c, err)
 }
