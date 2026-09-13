@@ -1,0 +1,4919 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Onepractice 在线英语真题平台 Go 后端 API。",
+        "title": "Onepractice API",
+        "contact": {},
+        "version": "0.1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/api/captcha/email": {
+            "get": {
+                "description": "向指定邮箱发送验证码。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "captcha"
+                ],
+                "summary": "发送邮箱验证码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "邮箱",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/captcha/email/verify": {
+            "post": {
+                "description": "校验邮箱验证码，成功后返回重置密码凭证。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "captcha"
+                ],
+                "summary": "校验邮箱验证码",
+                "parameters": [
+                    {
+                        "description": "邮箱验证码参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.EmailCaptchaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ResetPasswordTokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/books": {
+            "get": {
+                "description": "按词书名称和状态分页查询词书。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "分页查询词书",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "词书名称关键词",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "词书状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量，默认 20，最大 100",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DictionaryBookListPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/books/{bookid}/words": {
+            "get": {
+                "description": "根据词书 ID 分页查询该词书下的单词，支持关键词搜索。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "分页查询词书单词",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "词书 ID",
+                        "name": "bookid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "在单词拼写和释义中搜索",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量，默认 20，最大 100",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DictionaryWordListPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/lookup": {
+            "get": {
+                "description": "根据英文拼写查询中文释义，可选择精确匹配或模糊匹配。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "按单词查询释义",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "英文拼写",
+                        "name": "spelling",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否精确匹配，默认 false",
+                        "name": "exact",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量，默认 20，最大 100",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DictionaryLookupResult"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/words": {
+            "get": {
+                "description": "按关键词、拼写、释义、词书和词频范围分页查询单词。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "分页查询单词",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "在单词拼写和释义中搜索",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按英文拼写模糊搜索",
+                        "name": "spelling",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按中文释义模糊搜索",
+                        "name": "paraphrase",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "词书 ID",
+                        "name": "bookid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "最小词频",
+                        "name": "min_frequency",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "最大词频",
+                        "name": "max_frequency",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量，默认 20，最大 100",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DictionaryWordListPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/words/spelling/{spelling}": {
+            "get": {
+                "description": "根据英文拼写精确获取单词基础信息、所属词书和例句。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "按拼写获取单词详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "英文拼写",
+                        "name": "spelling",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DictionaryWordDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/words/{wordid}": {
+            "get": {
+                "description": "根据单词 ID 获取单词基础信息、所属词书和例句。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "获取单词详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "单词 ID",
+                        "name": "wordid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DictionaryWordDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/paper/all": {
+            "get": {
+                "description": "返回全部试卷列表。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "获取全部试卷",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Paper"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/paper/getPaperandRatingWithQuerys": {
+            "post": {
+                "description": "按试卷类型和年份分页查询试卷，同时返回评分和题目数量。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "分页查询试卷和评分",
+                "parameters": [
+                    {
+                        "description": "查询条件",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PaperQueryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PaperWithRatingPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/paper/getPaperwithQuerys": {
+            "post": {
+                "description": "按试卷类型和年份分页查询试卷。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "分页查询试卷",
+                "parameters": [
+                    {
+                        "description": "查询条件",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PaperQueryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PaperPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/paper/intro": {
+            "get": {
+                "description": "根据试卷 ID 返回试卷简介、分区数量和各分区题目数量。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "获取试卷简介",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "试卷 ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PaperIntro"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/paper/type": {
+            "get": {
+                "description": "根据试卷类型查询试卷列表。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "按类型查询试卷",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "试卷类型，如 CET-4/CET-6",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Paper"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/paper/types": {
+            "get": {
+                "description": "返回数据库中存在的全部试卷类型。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "获取全部试卷类型",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/question/getAllByIdSplitByPart": {
+            "get": {
+                "description": "返回指定试卷题目，并按 partName 分组。Part II 内按 questionOrder 排序。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "question"
+                ],
+                "summary": "按 Part 分组获取题目",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "试卷 ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ExamQuestion"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/question/getAnswersByPaperId": {
+            "get": {
+                "description": "返回指定试卷的全部答案，并按答案序号排序。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "question"
+                ],
+                "summary": "获取试卷答案",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "试卷 ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AnswersResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/question/getById": {
+            "get": {
+                "description": "返回指定试卷下的全部题目。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "question"
+                ],
+                "summary": "按试卷 ID 获取题目",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "试卷 ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Question"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/question/getByType": {
+            "get": {
+                "description": "返回指定试卷下指定题型的题目。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "question"
+                ],
+                "summary": "按试卷 ID 和题型获取题目",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "试卷 ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "题型",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Question"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/question/practice": {
+            "post": {
+                "description": "无需登录，返回随机试卷中的指定题型、题组和答案。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "question"
+                ],
+                "summary": "获取专项训练题目",
+                "parameters": [
+                    {
+                        "description": "专项训练参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PracticeQuestionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PracticeQuestionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/record/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "按最近天数分页获取当前登录用户的答题记录。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "获取答题记录列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "最近天数",
+                        "name": "days",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "pageNum",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.UserExamRecord"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/record/save": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "为当前登录用户创建一条答题记录，返回 recordId。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "保存答题记录",
+                "parameters": [
+                    {
+                        "description": "答题记录参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RecordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/record/update": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新当前登录用户已有答题记录的作答结果。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "更新答题记录",
+                "parameters": [
+                    {
+                        "description": "答题记录参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RecordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/info": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据 token 获取当前登录用户信息。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "获取当前用户信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.UserInfoResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/login": {
+            "post": {
+                "description": "使用用户名或邮箱登录，成功后返回 sa-token-go token。兼容旧 AES 密码，成功后升级为 bcrypt。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "用户登录",
+                "parameters": [
+                    {
+                        "description": "登录参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.LoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/logout": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "使当前 token 失效。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "用户登出",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/register": {
+            "post": {
+                "description": "使用用户名、密码、邮箱和邮箱验证码注册用户。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "用户注册",
+                "parameters": [
+                    {
+                        "description": "注册参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.RegisterResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/resetpassword": {
+            "post": {
+                "description": "使用邮箱和重置凭证重置密码。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "重置密码",
+                "parameters": [
+                    {
+                        "description": "重置密码参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/email-verifications": {
+            "post": {
+                "description": "向指定邮箱发送验证码。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "captcha"
+                ],
+                "summary": "发送邮箱验证码",
+                "parameters": [
+                    {
+                        "description": "邮箱验证参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.EmailVerificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/email-verifications/verification": {
+            "post": {
+                "description": "校验邮箱验证码，成功后返回重置密码凭证。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "captcha"
+                ],
+                "summary": "校验邮箱验证码",
+                "parameters": [
+                    {
+                        "description": "邮箱验证码参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.EmailVerificationVerifyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.ResetTokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/password-resets": {
+            "post": {
+                "description": "使用邮箱和重置凭证重置密码。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "重置密码",
+                "parameters": [
+                    {
+                        "description": "重置密码参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.ResetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/registrations": {
+            "post": {
+                "description": "使用用户名、密码、邮箱和邮箱验证码注册用户。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "用户注册",
+                "parameters": [
+                    {
+                        "description": "注册参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.RegisterResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/sessions": {
+            "post": {
+                "description": "使用用户名或邮箱登录。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "用户登录",
+                "parameters": [
+                    {
+                        "description": "登录参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.LoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/sessions/current": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "使当前 token 失效。",
+                "tags": [
+                    "user"
+                ],
+                "summary": "用户登出",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/dictionary/books": {
+            "get": {
+                "description": "按词书名称和状态分页查询词书。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "分页查询词书",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "关键词",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.DictionaryBookPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dictionary/books/{bookId}/words": {
+            "get": {
+                "description": "根据词书 ID 分页查询该词书下的单词，支持关键词搜索。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "分页查询词书单词",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "词书 ID",
+                        "name": "bookId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "关键词",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.DictionaryWordPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dictionary/definitions": {
+            "get": {
+                "description": "根据英文拼写查询中文释义，可选择精确匹配或模糊匹配。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "按单词查询释义",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "拼写",
+                        "name": "spelling",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否精确匹配",
+                        "name": "exact",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.DictionaryLookupResult"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dictionary/words": {
+            "get": {
+                "description": "按关键词、拼写、释义、词书和词频范围分页查询单词。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "分页查询单词",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "关键词",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "拼写",
+                        "name": "spelling",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "释义",
+                        "name": "paraphrase",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "词书 ID",
+                        "name": "bookId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "最小词频",
+                        "name": "minFrequency",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "最大词频",
+                        "name": "maxFrequency",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.DictionaryWordPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dictionary/words/by-spelling/{spelling}": {
+            "get": {
+                "description": "根据英文拼写精确获取单词基础信息、所属词书和例句。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "按拼写获取单词详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "拼写",
+                        "name": "spelling",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.DictionaryWordDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dictionary/words/{wordId}": {
+            "get": {
+                "description": "根据单词 ID 获取单词基础信息、所属词书和例句。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dictionary"
+                ],
+                "summary": "获取单词详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "单词 ID",
+                        "name": "wordId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.DictionaryWordDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/essay/records/{recordId}/results": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "按 recordId 查询当前登录用户某次考试关联的作文评分结果列表。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "essay"
+                ],
+                "summary": "查询考试的作文评分结果",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "答题记录 ID",
+                        "name": "recordId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.EssayResultResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/essay/results": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "分页查询当前登录用户不关联考试记录的独立作文评分结果。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "essay"
+                ],
+                "summary": "查询独立作文评分历史",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.EssayResultPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/essay/results/{taskId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "按 taskId 从数据库查询当前登录用户的作文评分结果。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "essay"
+                ],
+                "summary": "查询作文评分结果",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "任务 ID",
+                        "name": "taskId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.EssayResultResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/essay/tasks": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "提交作文题目与正文，创建异步批改任务，返回 taskId 与初始状态。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "essay"
+                ],
+                "summary": "创建作文批改任务",
+                "parameters": [
+                    {
+                        "description": "作文批改任务参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateEssayTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.EssayTaskCreatedResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/essay/tasks/{taskId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "按 taskId 查询当前登录用户的作文批改任务状态与结果。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "essay"
+                ],
+                "summary": "查询作文批改任务",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "任务 ID",
+                        "name": "taskId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.EssayTask"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ocr": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "上传图片并调用 GLM OCR，返回识别出的文字与版面信息。",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agent"
+                ],
+                "summary": "图片 OCR 识别",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "图片文件，支持 jpg/jpeg/png/webp，单张不超过 10MB",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.OcrResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/paper-types": {
+            "get": {
+                "description": "返回全部可用的试卷类型。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "获取试卷类型列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/papers": {
+            "get": {
+                "description": "分页查询试卷；默认 items 为 Paper。传 include=rating 时 items 为 PaperWithRating（含评分与题量）。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "获取试卷列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "试卷类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "年份",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "传 rating 返回评分信息",
+                        "name": "include",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.PaperPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/papers/{paperId}/answers": {
+            "get": {
+                "description": "返回指定试卷的全部答案，并按答案序号排序。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "question"
+                ],
+                "summary": "获取试卷答案",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "试卷 ID",
+                        "name": "paperId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.AnswersResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/papers/{paperId}/intro": {
+            "get": {
+                "description": "返回指定试卷的题型、时长、难度与各部分题量。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "获取试卷简介",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "试卷 ID",
+                        "name": "paperId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.PaperIntro"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/papers/{paperId}/questions": {
+            "get": {
+                "description": "返回指定试卷下的全部题目；默认 data 为题目数组，传 groupBy=part 时 data 为 ExamQuestion 分组结构。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "question"
+                ],
+                "summary": "按试卷获取题目",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "试卷 ID",
+                        "name": "paperId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "题型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "传 part 按 Part 分组",
+                        "name": "groupBy",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Question"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/points/balance": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "返回当前登录用户的积分余额。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "points"
+                ],
+                "summary": "查询积分余额",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.PointsBalanceResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/points/checkin-status": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "返回当前登录用户今日是否已签到。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "points"
+                ],
+                "summary": "查询签到状态",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.CheckinStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/points/daily-checkin": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "领取当日签到积分，同日重复领取幂等返回 granted=false。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "points"
+                ],
+                "summary": "每日签到",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.PointsGrantResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/points/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "分页返回当前登录用户的积分流水，按时间倒序。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "points"
+                ],
+                "summary": "查询积分流水",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.PointsTransactionPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/questions/practice": {
+            "post": {
+                "description": "无需登录，返回随机试卷中的指定题型、题组和答案。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "question"
+                ],
+                "summary": "获取专项训练题目",
+                "parameters": [
+                    {
+                        "description": "专项训练参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.PracticeQuestionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.PracticeQuestionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/records": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "按最近天数分页获取当前登录用户的答题记录。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "获取答题记录列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "最近天数",
+                        "name": "days",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.RecordPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "为当前登录用户创建一条答题记录，返回 recordId。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "保存答题记录",
+                "parameters": [
+                    {
+                        "description": "答题记录参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.CreateRecordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.RecordCreatedResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/records/{recordId}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新当前登录用户已有答题记录的作答结果。",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "更新答题记录",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "记录 ID",
+                        "name": "recordId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "答题记录参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.UpdateRecordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据 token 获取当前登录用户信息。",
+                "tags": [
+                    "user"
+                ],
+                "summary": "获取当前用户信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.UserInfoResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/me/favorite-words": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "分页获取当前用户收藏的单词，并返回词库释义、音标等信息。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word_favorite"
+                ],
+                "summary": "分页获取收藏单词",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "关键词",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页大小",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.FavoriteWordPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "收藏词库中的单词。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word_favorite"
+                ],
+                "summary": "收藏单词",
+                "parameters": [
+                    {
+                        "description": "收藏参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.FavoriteWordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.WordFavoriteRequest"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/me/favorite-words/{wordId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "检查当前用户是否已收藏指定单词。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word_favorite"
+                ],
+                "summary": "检查单词是否已收藏",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "单词 ID",
+                        "name": "wordId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.FavoriteStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "取消收藏词库中的单词。",
+                "tags": [
+                    "word_favorite"
+                ],
+                "summary": "取消收藏单词",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "单词 ID",
+                        "name": "wordId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/word/favorites": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "分页获取当前用户收藏的单词，并返回词库释义、音标等信息。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word"
+                ],
+                "summary": "分页获取收藏单词",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "在单词拼写和释义中搜索",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量，默认 20，最大 100",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CollectedWordList"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "收藏词库中的单词。优先使用 wordid；未传 wordid 时按 word 精确匹配 tb_vocabulary.spelling。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word"
+                ],
+                "summary": "收藏单词",
+                "parameters": [
+                    {
+                        "description": "收藏参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.WordFavoriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "取消收藏词库中的单词。支持 wordid 或 word 查询参数；不存在也返回成功。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word"
+                ],
+                "summary": "取消收藏单词",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "单词 ID",
+                        "name": "wordid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "英文拼写",
+                        "name": "word",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/word/favorites/check": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "检查当前用户是否已收藏指定单词。支持 wordid 或 word 查询参数。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word"
+                ],
+                "summary": "检查单词是否已收藏",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "单词 ID",
+                        "name": "wordid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "英文拼写",
+                        "name": "word",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "返回服务状态和数据库是否启用。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "健康检查",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.HealthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "agent.Input": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "agent.Output": {
+            "type": "object",
+            "properties": {
+                "essayAdvice": {
+                    "type": "string"
+                },
+                "essayFeedback": {
+                    "type": "object",
+                    "properties": {
+                        "overallProblems": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "sentsFeedback": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "correctedSent": {
+                                        "type": "string"
+                                    },
+                                    "errorPosInfos": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "correctChunk": {
+                                                    "type": "string"
+                                                },
+                                                "detailReason": {
+                                                    "type": "string"
+                                                },
+                                                "errBaseInfo": {
+                                                    "type": "string"
+                                                },
+                                                "errorTypeTitle": {
+                                                    "type": "string"
+                                                },
+                                                "orgChunk": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "isContainGrammarError": {
+                                        "type": "boolean"
+                                    },
+                                    "paraId": {
+                                        "type": "integer"
+                                    },
+                                    "rawSent": {
+                                        "type": "string"
+                                    },
+                                    "sentFeedback": {
+                                        "type": "string"
+                                    },
+                                    "sentId": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "fullScore": {
+                    "type": "integer"
+                },
+                "improvementAdvice": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "majorScore": {
+                    "type": "object",
+                    "properties": {
+                        "grammarAdvice": {
+                            "type": "string"
+                        },
+                        "grammarScore": {
+                            "type": "number"
+                        },
+                        "structureAdvice": {
+                            "type": "string"
+                        },
+                        "structureScore": {
+                            "type": "number"
+                        },
+                        "topicAdvice": {
+                            "type": "string"
+                        },
+                        "topicScore": {
+                            "type": "number"
+                        },
+                        "wordAdvice": {
+                            "type": "string"
+                        },
+                        "wordScore": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "paraNum": {
+                    "type": "integer"
+                },
+                "rawEssay": {
+                    "type": "string"
+                },
+                "rewriteSuggestions": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "original": {
+                                "type": "string"
+                            },
+                            "reason": {
+                                "type": "string"
+                            },
+                            "rewritten": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "sentNum": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "totalEvaluation": {
+                    "type": "string"
+                },
+                "totalScore": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "wordNum": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.AnswersResponse": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Answer"
+                    }
+                },
+                "paperId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.CheckinStatusResponse": {
+            "type": "object",
+            "properties": {
+                "checkedIn": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "apiv1.CollectedWordItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "favoriteId": {
+                    "type": "integer"
+                },
+                "frequency": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "paraphrase": {
+                    "type": "string"
+                },
+                "spelling": {
+                    "type": "string"
+                },
+                "ukPhonetic": {
+                    "type": "string"
+                },
+                "usPhonetic": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                },
+                "wordId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.CreateRecordRequest": {
+            "type": "object",
+            "required": [
+                "paperId"
+            ],
+            "properties": {
+                "answers": {
+                    "type": "string"
+                },
+                "hasSpendTime": {
+                    "type": "integer"
+                },
+                "isFinished": {
+                    "type": "integer"
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "timeSpend": {
+                    "type": "integer"
+                },
+                "totalScore": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.DictionaryBookListItem": {
+            "type": "object",
+            "properties": {
+                "bookId": {
+                    "type": "integer"
+                },
+                "bookName": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "vocCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.DictionaryBookPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.DictionaryBookListItem"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.DictionaryBookSimple": {
+            "type": "object",
+            "properties": {
+                "bookId": {
+                    "type": "integer"
+                },
+                "bookName": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.DictionaryLookupResult": {
+            "type": "object",
+            "properties": {
+                "exact": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.DictionaryWordListItem"
+                    }
+                },
+                "spelling": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.DictionaryWordDetail": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.DictionaryBookSimple"
+                    }
+                },
+                "examples": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.DictionaryWordExampleItem"
+                    }
+                },
+                "word": {
+                    "$ref": "#/definitions/apiv1.DictionaryWordListItem"
+                }
+            }
+        },
+        "apiv1.DictionaryWordExampleItem": {
+            "type": "object",
+            "properties": {
+                "addDate": {
+                    "type": "string"
+                },
+                "cn": {
+                    "type": "string"
+                },
+                "en": {
+                    "type": "string"
+                },
+                "exaPid": {
+                    "type": "integer"
+                },
+                "heat": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.DictionaryWordListItem": {
+            "type": "object",
+            "properties": {
+                "frequency": {
+                    "type": "number"
+                },
+                "paraphrase": {
+                    "type": "string"
+                },
+                "spelling": {
+                    "type": "string"
+                },
+                "ukPhonetic": {
+                    "type": "string"
+                },
+                "usPhonetic": {
+                    "type": "string"
+                },
+                "wordId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.DictionaryWordPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.DictionaryWordListItem"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.EmailVerificationRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "purpose": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.EmailVerificationVerifyRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "email"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "purpose": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.EssayResultPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.EssayResultResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.EssayTaskCreatedResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                },
+                "taskId": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.FavoriteStatusResponse": {
+            "type": "object",
+            "properties": {
+                "favorited": {
+                    "type": "boolean"
+                },
+                "wordId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.FavoriteWordPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.CollectedWordItem"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.FavoriteWordRequest": {
+            "type": "object",
+            "required": [
+                "wordId"
+            ],
+            "properties": {
+                "paperId": {
+                    "type": "integer"
+                },
+                "wordId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "usernameOrEmail"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "usernameOrEmail": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.OcrResponse": {
+            "type": "object",
+            "properties": {
+                "layout_details": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {}
+                        }
+                    }
+                },
+                "md_results": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.PaperIntro": {
+            "type": "object",
+            "properties": {
+                "difficulty": {
+                    "type": "string"
+                },
+                "examMonth": {
+                    "type": "integer"
+                },
+                "examYear": {
+                    "type": "integer"
+                },
+                "paperName": {
+                    "type": "string"
+                },
+                "paperTime": {
+                    "type": "integer"
+                },
+                "paperType": {
+                    "type": "string"
+                },
+                "sectionCount": {
+                    "type": "integer"
+                },
+                "sectionQuestionCount": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "apiv1.PaperPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Paper"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.PointsBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.PointsGrantResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer"
+                },
+                "granted": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "apiv1.PointsTransactionItem": {
+            "type": "object",
+            "properties": {
+                "balanceAfter": {
+                    "type": "integer"
+                },
+                "bizId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "delta": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "remark": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.PointsTransactionPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.PointsTransactionItem"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.PracticeQuestionGroup": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Answer"
+                    }
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "questionParts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.QuestionPart"
+                    }
+                }
+            }
+        },
+        "apiv1.PracticeQuestionRequest": {
+            "type": "object",
+            "required": [
+                "questionType",
+                "unitCount"
+            ],
+            "properties": {
+                "questionType": {
+                    "type": "string"
+                },
+                "unitCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.PracticeQuestionResponse": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.PracticeQuestionGroup"
+                    }
+                },
+                "questionType": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.QuestionPart": {
+            "type": "object",
+            "properties": {
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Question"
+                    }
+                }
+            }
+        },
+        "apiv1.RecordCreatedResponse": {
+            "type": "object",
+            "properties": {
+                "recordId": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.RecordPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.UserExamRecord"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "captchaCode",
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "captchaCode": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "userType": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                }
+            }
+        },
+        "apiv1.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.ResetPasswordRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "resetToken"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "resetToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.ResetTokenResponse": {
+            "type": "object",
+            "properties": {
+                "resetToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.UpdateRecordRequest": {
+            "type": "object",
+            "required": [
+                "paperId"
+            ],
+            "properties": {
+                "answers": {
+                    "type": "string"
+                },
+                "hasSpendTime": {
+                    "type": "integer"
+                },
+                "isFinished": {
+                    "type": "integer"
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "timeSpend": {
+                    "type": "integer"
+                },
+                "totalScore": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.UserExamRecord": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "string"
+                },
+                "hasSpendTime": {
+                    "type": "integer"
+                },
+                "isFinished": {
+                    "type": "integer"
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "paperName": {
+                    "type": "string"
+                },
+                "paperType": {
+                    "type": "string"
+                },
+                "recordId": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "timeSpend": {
+                    "type": "integer"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "totalScore": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.UserInfoResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "userType": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AnswersResponse": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Answer"
+                    }
+                },
+                "paperId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CollectedWordItem": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "favorite_id": {
+                    "type": "integer"
+                },
+                "frequency": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "paper_id": {
+                    "type": "integer"
+                },
+                "paraphrase": {
+                    "type": "string"
+                },
+                "spelling": {
+                    "type": "string"
+                },
+                "uk_phonetic": {
+                    "type": "string"
+                },
+                "us_phonetic": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                },
+                "wordid": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CollectedWordList": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CollectedWordItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CreateEssayTaskRequest": {
+            "type": "object",
+            "required": [
+                "content",
+                "title",
+                "type"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "recordId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DictionaryBookListItem": {
+            "type": "object",
+            "properties": {
+                "bookid": {
+                    "type": "integer"
+                },
+                "bookname": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "voccount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DictionaryBookListPage": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DictionaryBookListItem"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DictionaryBookSimple": {
+            "type": "object",
+            "properties": {
+                "bookid": {
+                    "type": "integer"
+                },
+                "bookname": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DictionaryLookupResult": {
+            "type": "object",
+            "properties": {
+                "exact": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DictionaryWordListItem"
+                    }
+                },
+                "spelling": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DictionaryWordDetail": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DictionaryBookSimple"
+                    }
+                },
+                "examples": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DictionaryWordExampleItem"
+                    }
+                },
+                "word": {
+                    "$ref": "#/definitions/dto.DictionaryWordListItem"
+                }
+            }
+        },
+        "dto.DictionaryWordExampleItem": {
+            "type": "object",
+            "properties": {
+                "adddate": {
+                    "type": "string"
+                },
+                "cn": {
+                    "type": "string"
+                },
+                "en": {
+                    "type": "string"
+                },
+                "exapid": {
+                    "type": "integer"
+                },
+                "heat": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DictionaryWordListItem": {
+            "type": "object",
+            "properties": {
+                "frequency": {
+                    "type": "number"
+                },
+                "paraphrase": {
+                    "type": "string"
+                },
+                "spelling": {
+                    "type": "string"
+                },
+                "uk_phonetic": {
+                    "type": "string"
+                },
+                "us_phonetic": {
+                    "type": "string"
+                },
+                "wordid": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DictionaryWordListPage": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DictionaryWordListItem"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.EmailCaptchaRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "email"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "purpose": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.EssayResultResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "fullScore": {
+                    "type": "integer"
+                },
+                "grammarScore": {
+                    "type": "number"
+                },
+                "recordId": {
+                    "type": "string"
+                },
+                "result": {
+                    "$ref": "#/definitions/agent.Output"
+                },
+                "structureScore": {
+                    "type": "number"
+                },
+                "taskId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "topicScore": {
+                    "type": "number"
+                },
+                "totalScore": {
+                    "type": "number"
+                },
+                "wordNum": {
+                    "type": "integer"
+                },
+                "wordScore": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.EssayTask": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "input": {
+                    "$ref": "#/definitions/agent.Input"
+                },
+                "recordId": {
+                    "type": "string"
+                },
+                "result": {
+                    "$ref": "#/definitions/agent.Output"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "taskId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ExamQuestion": {
+            "type": "object",
+            "properties": {
+                "paperId": {
+                    "type": "integer"
+                },
+                "questionParts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.QuestionPart"
+                    }
+                }
+            }
+        },
+        "dto.HealthResponse": {
+            "type": "object",
+            "properties": {
+                "database": {
+                    "type": "boolean"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "usernameorEmail"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "usernameorEmail": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PaperIntro": {
+            "type": "object",
+            "properties": {
+                "difficulty": {
+                    "type": "string"
+                },
+                "examMonth": {
+                    "type": "integer"
+                },
+                "examYear": {
+                    "type": "integer"
+                },
+                "paperName": {
+                    "type": "string"
+                },
+                "paperTime": {
+                    "type": "integer"
+                },
+                "paperType": {
+                    "type": "string"
+                },
+                "sectionCount": {
+                    "type": "integer"
+                },
+                "sectionQuestionCount": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "dto.PaperPage": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Paper"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PaperQueryRequest": {
+            "type": "object",
+            "required": [
+                "page",
+                "size"
+            ],
+            "properties": {
+                "page": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "size": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1
+                },
+                "type": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PaperWithRating": {
+            "type": "object",
+            "properties": {
+                "examMonth": {
+                    "type": "integer"
+                },
+                "examYear": {
+                    "type": "integer"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "paperName": {
+                    "type": "string"
+                },
+                "questionCount": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "totalTime": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PaperWithRatingPage": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PaperWithRating"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PracticeQuestionGroup": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Answer"
+                    }
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "questionParts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.QuestionPart"
+                    }
+                }
+            }
+        },
+        "dto.PracticeQuestionRequest": {
+            "type": "object",
+            "required": [
+                "questionType",
+                "unitCount"
+            ],
+            "properties": {
+                "questionType": {
+                    "type": "string"
+                },
+                "unitCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PracticeQuestionResponse": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PracticeQuestionGroup"
+                    }
+                },
+                "questionType": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.QuestionPart": {
+            "type": "object",
+            "properties": {
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Question"
+                    }
+                }
+            }
+        },
+        "dto.RecordRequest": {
+            "type": "object",
+            "required": [
+                "paperId"
+            ],
+            "properties": {
+                "answers": {
+                    "type": "string"
+                },
+                "hasspendtime": {
+                    "type": "integer"
+                },
+                "isfinished": {
+                    "type": "integer"
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "recordId": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "timespend": {
+                    "type": "integer"
+                },
+                "totalscore": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "captchacode",
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "captchacode": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                },
+                "usertype": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ResetPasswordRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "resetToken"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "resetToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ResetPasswordTokenResponse": {
+            "type": "object",
+            "properties": {
+                "resetToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UserExamRecord": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "string"
+                },
+                "hasspendtime": {
+                    "type": "integer"
+                },
+                "isfinished": {
+                    "type": "integer"
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "paperName": {
+                    "type": "string"
+                },
+                "paperType": {
+                    "type": "string"
+                },
+                "recordId": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "timespend": {
+                    "type": "integer"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "totalscore": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.UserInfoResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "userType": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.WordFavoriteRequest": {
+            "type": "object",
+            "properties": {
+                "paper_id": {
+                    "type": "integer"
+                },
+                "word": {
+                    "type": "string"
+                },
+                "wordid": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Answer": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "index": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Option": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Paper": {
+            "type": "object",
+            "properties": {
+                "examMonth": {
+                    "type": "integer"
+                },
+                "examYear": {
+                    "type": "integer"
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "paperName": {
+                    "type": "string"
+                },
+                "questionCount": {
+                    "type": "integer"
+                },
+                "totalTime": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Question": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "correctAnswer": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Answer"
+                    }
+                },
+                "listenurl": {
+                    "type": "string"
+                },
+                "matchingData": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ReadItem"
+                    }
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Option"
+                    }
+                },
+                "paperId": {
+                    "type": "integer"
+                },
+                "partName": {
+                    "type": "string"
+                },
+                "questionId": {
+                    "type": "integer"
+                },
+                "questionOrder": {
+                    "type": "integer"
+                },
+                "questionType": {
+                    "type": "string"
+                },
+                "readingSplitQuestion": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sectionName": {
+                    "type": "string"
+                },
+                "wordBank": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "model.ReadItem": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.Body": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "request_id": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
