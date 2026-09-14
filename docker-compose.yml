@@ -1,0 +1,71 @@
+# 仅运行 API 服务：镜像从本仓库源码直接构建，MySQL / Redis 复用外部已有实例。
+#
+# 用法：
+#   1) cp config.example.yaml config.yaml   # 填写数据库 / LLM 等配置，只读挂入容器
+#   2) cp deploy/.env.example .env           # 修改 MYSQL_DSN / REDIS_ADDR 等连接信息
+#   3) docker compose up -d --build
+#   4) 健康检查 http://localhost:8080/health，接口文档 http://localhost:8080/docs
+#
+# 说明：
+#   - 表结构不会自动创建，首次部署需先手动执行 migrations/001~005（见 migrations/）。
+#   - 环境变量名与 internal/config/loader.go 的 bindEnvs 保持一致。
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: onepractice-go:local
+    container_name: onepractice-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      SERVER_PORT: "8080"
+      # 外部 MySQL / Redis 连接信息，通过 .env 注入
+      MYSQL_DSN: "${MYSQL_DSN:?MYSQL_DSN is required, e.g. root:pass@tcp(mysql:3306)/onepractice?charset=utf8mb4&parseTime=True&loc=Local}"
+      REDIS_ADDR: "${REDIS_ADDR:-}"
+      REDIS_USERNAME: "${REDIS_USERNAME:-}"
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-}"
+      REDIS_DB: "${REDIS_DB:-0}"
+      REDIS_DISABLED: "${REDIS_DISABLED:-false}"
+      SA_TOKEN_NAME: "${SA_TOKEN_NAME:-token}"
+      SA_TOKEN_TIMEOUT: "${SA_TOKEN_TIMEOUT:-1296000}"
+      SENDFLARE_DISABLED: "${SENDFLARE_DISABLED:-true}"
+      SENDFLARE_API_KEY: "${SENDFLARE_API_KEY:-}"
+      SENDFLARE_FROM: "${SENDFLARE_FROM:-}"
+      GLM_API_KEY: "${GLM_API_KEY:-}"
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
+      # 进程时区，影响 Go time.Local 与积分签到日计算
+      TZ: "${TZ:-Asia/Shanghai}"
+      # 与下方日志挂载保持一致；环境变量优先级高于 config.yaml 的 log.dir
+      ONEPRACTICE_LOG_DIR: "logs"
+    volumes:
+      # 配置只读挂入容器；loadConfigFile 会自动读取工作目录 /app 下的 config.yaml。
+      # 镜像本身不含 config.yaml（已被 .dockerignore 排除），必须先在仓库根目录准备好该文件。
+      # create_host_path: false 让文件缺失时直接报错，而不是悄悄创建一个同名目录。
+      - type: bind
+        source: ./config.yaml
+        target: /app/config.yaml
+        read_only: true
+        bind:
+          create_host_path: false
+      # 日志持久化到宿主机 ./logs（该目录已被 .gitignore 忽略，缺失时自动创建）
+      - ./logs:/app/logs
+    # 便于在 .env 中用 host.docker.internal 访问宿主机上的 MySQL / Redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - default
+
+networks:
+  # 复用现有外部网络，使 api 能按容器名直连同网络下的 MySQL / Redis。
+  # 若外部库在宿主机而非该网络，请在 .env 里把 host 写成 host.docker.internal。
+  default:
+    name: "${DOCKER_NETWORK:-1panel-network}"
+    external: true

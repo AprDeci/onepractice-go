@@ -2,6 +2,7 @@
 .github
 .air.toml
 tmp
+logs
 *.exe
 *.log
 config.yaml
