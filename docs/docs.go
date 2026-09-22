@@ -2406,6 +2406,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/points/costs": {
+            "get": {
+                "description": "返回 OCR、作文批改等功能的当前积分消耗，以及每日签到奖励。数值来自 point_rules 生效规则，缺失时回落配置默认值。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "points"
+                ],
+                "summary": "查询功能积分消耗",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.PointsCostsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/points/daily-checkin": {
             "post": {
                 "security": [
@@ -2421,6 +2453,14 @@ const docTemplate = `{
                     "points"
                 ],
                 "summary": "每日签到",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "人机校验 token（开启 turnstile 时必填）",
+                        "name": "X-Turnstile-Token",
+                        "in": "header"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3629,14 +3669,14 @@ const docTemplate = `{
         "apiv1.LoginRequest": {
             "type": "object",
             "required": [
-                "password",
-                "usernameOrEmail"
+                "email",
+                "password"
             ],
             "properties": {
-                "password": {
+                "email": {
                     "type": "string"
                 },
-                "usernameOrEmail": {
+                "password": {
                     "type": "string"
                 }
             }
@@ -3650,10 +3690,10 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "token": {
+                "nickname": {
                     "type": "string"
                 },
-                "username": {
+                "token": {
                     "type": "string"
                 }
             }
@@ -3732,6 +3772,34 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "balance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiv1.PointsCostItem": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "cost": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiv1.PointsCostsResponse": {
+            "type": "object",
+            "properties": {
+                "costs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiv1.PointsCostItem"
+                    }
+                },
+                "dailyLoginReward": {
                     "type": "integer"
                 }
             }
@@ -3886,8 +3954,8 @@ const docTemplate = `{
             "required": [
                 "captchaCode",
                 "email",
-                "password",
-                "username"
+                "nickname",
+                "password"
             ],
             "properties": {
                 "captchaCode": {
@@ -3896,16 +3964,16 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "nickname": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                },
                 "password": {
                     "type": "string"
                 },
                 "userType": {
                     "type": "integer"
-                },
-                "username": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 3
                 }
             }
         },
@@ -3915,7 +3983,7 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "username": {
+                "nickname": {
                     "type": "string"
                 }
             }
@@ -4029,11 +4097,11 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "nickname": {
+                    "type": "string"
+                },
                 "userType": {
                     "type": "integer"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
@@ -4403,6 +4471,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "usernameorEmail": {
+                    "description": "legacy 线格式仍是 usernameorEmail，但只接受邮箱。",
                     "type": "string"
                 }
             }

@@ -34,14 +34,14 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 	result, err := h.service.Register(c.Request.Context(), dto.RegisterRequest{
-		Username: input.Username, Password: input.Password, Email: input.Email,
+		Nickname: input.Nickname, Password: input.Password, Email: input.Email,
 		CaptchaCode: input.CaptchaCode, UserType: input.UserType,
 	})
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrInvalidParam):
 			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
-		case errors.Is(err, service.ErrUsernameExists), errors.Is(err, service.ErrEmailExists):
+		case errors.Is(err, service.ErrEmailExists):
 			response.Error(c, apperror.New(apperror.CodeConflict, "资源已存在"))
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
@@ -50,7 +50,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		}
 		return
 	}
-	response.Created(c, dtoV1.RegisterResponse{Username: result.Username, Email: result.Email})
+	response.Created(c, dtoV1.RegisterResponse{Nickname: result.Nickname, Email: result.Email})
 }
 
 // Login 用户登录。
@@ -68,7 +68,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
 		return
 	}
-	result, err := h.service.Login(dto.LoginRequest{UsernameOrEmail: input.UsernameOrEmail, Password: input.Password})
+	result, err := h.service.Login(dto.LoginRequest{Email: input.Email, Password: input.Password})
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrInvalidParam):
@@ -82,7 +82,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		}
 		return
 	}
-	response.Success(c, dtoV1.LoginResponse{ID: result.ID, Username: result.Username, Email: result.Email, Token: result.Token})
+	response.Success(c, dtoV1.LoginResponse{ID: result.ID, Nickname: result.Nickname, Email: result.Email, Token: result.Token})
 }
 
 // Logout 用户登出。
@@ -129,7 +129,7 @@ func (h *UserHandler) Info(c *gin.Context) {
 		}
 		return
 	}
-	response.Success(c, dtoV1.UserInfoResponse{Username: result.Username, UserType: result.UserType, Email: result.Email})
+	response.Success(c, dtoV1.UserInfoResponse{Nickname: result.Nickname, UserType: result.UserType, Email: result.Email})
 }
 
 // ResetPassword 重置密码。

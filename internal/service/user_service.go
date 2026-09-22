@@ -18,7 +18,6 @@ var (
 	ErrInvalidParam        = errors.New("参数无效")
 	ErrCaptchaInvalid      = errors.New("验证码错误")
 	ErrEmailSendWait       = errors.New("邮箱已经发送 稍后再试")
-	ErrUsernameExists      = errors.New("用户名已存在")
 	ErrEmailExists         = errors.New("邮箱已存在")
 	ErrPasswordOrUserError = errors.New("密码错误或用户不存在")
 	ErrTokenInvalid        = errors.New("Token失效")
@@ -38,9 +37,9 @@ func (s *UserService) Register(ctx context.Context, req dto.RegisterRequest) (dt
 		return dto.RegisterResponse{}, ErrDatabaseDisabled
 	}
 
-	username := strings.TrimSpace(req.Username)
+	nickname := strings.TrimSpace(req.Nickname)
 	email := normalizeEmail(req.Email)
-	if username == "" || email == "" || req.Password == "" {
+	if nickname == "" || email == "" || req.Password == "" {
 		return dto.RegisterResponse{}, ErrInvalidParam
 	}
 
@@ -48,11 +47,7 @@ func (s *UserService) Register(ctx context.Context, req dto.RegisterRequest) (dt
 		return dto.RegisterResponse{}, err
 	}
 
-	if exists, err := s.usernameExists(username); err != nil {
-		return dto.RegisterResponse{}, err
-	} else if exists {
-		return dto.RegisterResponse{}, ErrUsernameExists
-	}
+	// 昵称只是展示名，可以重复；邮箱才是唯一标识。
 	if exists, err := s.emailExists(email); err != nil {
 		return dto.RegisterResponse{}, err
 	} else if exists {
@@ -69,7 +64,7 @@ func (s *UserService) Register(ctx context.Context, req dto.RegisterRequest) (dt
 	}
 
 	user := model.User{
-		Username: username,
+		Nickname: nickname,
 		Password: passwordHash,
 		Email:    storedEmail,
 		UserType: req.UserType,
@@ -78,7 +73,7 @@ func (s *UserService) Register(ctx context.Context, req dto.RegisterRequest) (dt
 		return dto.RegisterResponse{}, err
 	}
 
-	return dto.RegisterResponse{Username: username, Email: email}, nil
+	return dto.RegisterResponse{Nickname: nickname, Email: email}, nil
 }
 
 func (s *UserService) Login(req dto.LoginRequest) (dto.LoginResponse, error) {
@@ -86,21 +81,18 @@ func (s *UserService) Login(req dto.LoginRequest) (dto.LoginResponse, error) {
 		return dto.LoginResponse{}, ErrDatabaseDisabled
 	}
 
-	account := strings.TrimSpace(req.UsernameOrEmail)
-	var user model.User
-	query := s.db
-	if strings.Contains(account, "@") {
-		email := normalizeEmail(account)
-		encEmail, err := utils.LegacyAESEncrypt(email)
-		if err != nil {
-			return dto.LoginResponse{}, err
-		}
-		query = query.Where("email in ?", []string{email, encEmail})
-	} else {
-		query = query.Where("username = ?", account)
+	account := normalizeEmail(req.Email)
+	if account == "" {
+		return dto.LoginResponse{}, ErrInvalidParam
 	}
 
-	if err := query.First(&user).Error; err != nil {
+	encEmail, err := utils.LegacyAESEncrypt(account)
+	if err != nil {
+		return dto.LoginResponse{}, err
+	}
+
+	var user model.User
+	if err := s.db.Where("email in ?", []string{account, encEmail}).First(&user).Error; err != nil {
 		return dto.LoginResponse{}, ErrPasswordOrUserError
 	}
 
@@ -119,7 +111,7 @@ func (s *UserService) Login(req dto.LoginRequest) (dto.LoginResponse, error) {
 		return dto.LoginResponse{}, err
 	}
 
-	return dto.LoginResponse{ID: user.ID, Username: user.Username, Email: decryptEmail(user.Email), Token: token}, nil
+	return dto.LoginResponse{ID: user.ID, Nickname: user.Nickname, Email: decryptEmail(user.Email), Token: token}, nil
 }
 
 func (s *UserService) Info(userID int64) (dto.UserInfoResponse, error) {
@@ -131,7 +123,7 @@ func (s *UserService) Info(userID int64) (dto.UserInfoResponse, error) {
 	if err := s.db.Where("id = ?", userID).First(&user).Error; err != nil {
 		return dto.UserInfoResponse{}, err
 	}
-	return dto.UserInfoResponse{Username: user.Username, UserType: user.UserType, Email: decryptEmail(user.Email)}, nil
+	return dto.UserInfoResponse{Nickname: user.Nickname, UserType: user.UserType, Email: decryptEmail(user.Email)}, nil
 }
 
 func (s *UserService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequest) error {
@@ -165,12 +157,6 @@ func LoginIDFromToken(token string) (int64, error) {
 		return 0, err
 	}
 	return strconv.ParseInt(loginID, 10, 64)
-}
-
-func (s *UserService) usernameExists(username string) (bool, error) {
-	var count int64
-	err := s.db.Model(&model.User{}).Where("username = ?", username).Count(&count).Error
-	return count > 0, err
 }
 
 func (s *UserService) emailExists(email string) (bool, error) {

@@ -42,7 +42,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		switch {
 		case errors.Is(err, service.ErrInvalidParam):
 			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
-		case errors.Is(err, service.ErrUsernameExists), errors.Is(err, service.ErrEmailExists):
+		case errors.Is(err, service.ErrEmailExists):
 			response.Error(c, apperror.New(apperror.CodeConflict, "资源已存在"))
 		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
 			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))

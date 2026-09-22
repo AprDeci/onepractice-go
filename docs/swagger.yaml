@@ -335,13 +335,13 @@ definitions:
     type: object
   apiv1.LoginRequest:
     properties:
+      email:
+        type: string
       password:
         type: string
-      usernameOrEmail:
-        type: string
     required:
+    - email
     - password
-    - usernameOrEmail
     type: object
   apiv1.LoginResponse:
     properties:
@@ -349,9 +349,9 @@ definitions:
         type: string
       id:
         type: integer
-      token:
+      nickname:
         type: string
-      username:
+      token:
         type: string
     type: object
   apiv1.OcrResponse:
@@ -403,6 +403,24 @@ definitions:
   apiv1.PointsBalanceResponse:
     properties:
       balance:
+        type: integer
+    type: object
+  apiv1.PointsCostItem:
+    properties:
+      action:
+        type: string
+      cost:
+        type: integer
+      name:
+        type: string
+    type: object
+  apiv1.PointsCostsResponse:
+    properties:
+      costs:
+        items:
+          $ref: '#/definitions/apiv1.PointsCostItem'
+        type: array
+      dailyLoginReward:
         type: integer
     type: object
   apiv1.PointsGrantResponse:
@@ -505,25 +523,25 @@ definitions:
         type: string
       email:
         type: string
+      nickname:
+        maxLength: 20
+        minLength: 3
+        type: string
       password:
         type: string
       userType:
         type: integer
-      username:
-        maxLength: 20
-        minLength: 3
-        type: string
     required:
     - captchaCode
     - email
+    - nickname
     - password
-    - username
     type: object
   apiv1.RegisterResponse:
     properties:
       email:
         type: string
-      username:
+      nickname:
         type: string
     type: object
   apiv1.ResetPasswordRequest:
@@ -598,10 +616,10 @@ definitions:
     properties:
       email:
         type: string
+      nickname:
+        type: string
       userType:
         type: integer
-      username:
-        type: string
     type: object
   dto.AnswersResponse:
     properties:
@@ -840,6 +858,7 @@ definitions:
       password:
         type: string
       usernameorEmail:
+        description: legacy 线格式仍是 usernameorEmail，但只接受邮箱。
         type: string
     required:
     - password
@@ -2603,9 +2622,32 @@ paths:
       summary: 查询签到状态
       tags:
       - points
+  /api/v1/points/costs:
+    get:
+      description: 返回 OCR、作文批改等功能的当前积分消耗，以及每日签到奖励。数值来自 point_rules 生效规则，缺失时回落配置默认值。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.PointsCostsResponse'
+              type: object
+      summary: 查询功能积分消耗
+      tags:
+      - points
   /api/v1/points/daily-checkin:
     post:
       description: 领取当日签到积分，同日重复领取幂等返回 granted=false。
+      parameters:
+      - description: 人机校验 token（开启 turnstile 时必填）
+        in: header
+        name: X-Turnstile-Token
+        type: string
       produces:
       - application/json
       responses:
