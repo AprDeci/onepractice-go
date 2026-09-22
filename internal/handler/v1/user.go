@@ -132,6 +132,43 @@ func (h *UserHandler) Info(c *gin.Context) {
 	response.Success(c, dtoV1.UserInfoResponse{Nickname: result.Nickname, UserType: result.UserType, Email: result.Email})
 }
 
+// UpdateNickname 修改当前用户昵称。
+// @Summary 修改当前用户昵称
+// @Description 修改当前登录用户的昵称。昵称只是展示名，可以重复，不需要邮箱验证码。
+// @Tags user
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param request body apiv1.UpdateNicknameRequest true "昵称"
+// @Success 200 {object} response.Body{data=apiv1.UserInfoResponse}
+// @Router /api/v1/users/me [patch]
+func (h *UserHandler) UpdateNickname(c *gin.Context) {
+	userID, ok := currentUserID(c)
+	if !ok {
+		return
+	}
+	var input dtoV1.UpdateNicknameRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		return
+	}
+	result, err := h.service.UpdateNickname(c.Request.Context(), userID, input.Nickname)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrInvalidParam):
+			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			response.Error(c, apperror.New(apperror.CodeNotFound, "资源不存在"))
+		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
+			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
+		default:
+			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		}
+		return
+	}
+	response.Success(c, dtoV1.UserInfoResponse{Nickname: result.Nickname, UserType: result.UserType, Email: result.Email})
+}
+
 // ResetPassword 重置密码。
 // @Summary 重置密码
 // @Description 使用邮箱和重置凭证重置密码。

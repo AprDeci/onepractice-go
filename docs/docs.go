@@ -2758,6 +2758,55 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "修改当前登录用户的昵称。昵称只是展示名，可以重复，不需要邮箱验证码。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "修改当前用户昵称",
+                "parameters": [
+                    {
+                        "description": "昵称",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.UpdateNicknameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/apiv1.UserInfoResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
             }
         },
         "/api/v1/users/me/favorite-words": {
@@ -4012,6 +4061,19 @@ const docTemplate = `{
             "properties": {
                 "resetToken": {
                     "type": "string"
+                }
+            }
+        },
+        "apiv1.UpdateNicknameRequest": {
+            "type": "object",
+            "required": [
+                "nickname"
+            ],
+            "properties": {
+                "nickname": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
                 }
             }
         },

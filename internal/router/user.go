@@ -14,5 +14,6 @@ func registerUserRoutes(rg *gin.RouterGroup, h *handlerv1.UserHandler) {
 
 func registerUserProtectedRoutes(rg *gin.RouterGroup, h *handlerv1.UserHandler) {
 	rg.GET("/users/me", h.Info)
+	rg.PATCH("/users/me", h.UpdateNickname)
 	rg.DELETE("/auth/sessions/current", h.Logout)
 }

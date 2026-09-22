@@ -93,6 +93,7 @@ func TestV1ProtectedRoutesRequireAuth(t *testing.T) {
 		path   string
 	}{
 		{http.MethodGet, "/api/v1/users/me"},
+		{http.MethodPatch, "/api/v1/users/me"},
 		{http.MethodDelete, "/api/v1/auth/sessions/current"},
 		{http.MethodPost, "/api/v1/records"},
 		{http.MethodGet, "/api/v1/records"},

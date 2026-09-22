@@ -562,6 +562,15 @@ definitions:
       resetToken:
         type: string
     type: object
+  apiv1.UpdateNicknameRequest:
+    properties:
+      nickname:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - nickname
+    type: object
   apiv1.UpdateRecordRequest:
     properties:
       answers:
@@ -2823,6 +2832,34 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 获取当前用户信息
+      tags:
+      - user
+    patch:
+      consumes:
+      - application/json
+      description: 修改当前登录用户的昵称。昵称只是展示名，可以重复，不需要邮箱验证码。
+      parameters:
+      - description: 昵称
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.UpdateNicknameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Body'
+            - properties:
+                data:
+                  $ref: '#/definitions/apiv1.UserInfoResponse'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 修改当前用户昵称
       tags:
       - user
   /api/v1/users/me/favorite-words:

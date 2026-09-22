@@ -126,6 +126,27 @@ func (s *UserService) Info(userID int64) (dto.UserInfoResponse, error) {
 	return dto.UserInfoResponse{Nickname: user.Nickname, UserType: user.UserType, Email: decryptEmail(user.Email)}, nil
 }
 
+// UpdateNickname 修改指定用户的昵称。昵称不唯一，不需要邮箱验证码。
+func (s *UserService) UpdateNickname(ctx context.Context, userID int64, nickname string) (dto.UserInfoResponse, error) {
+	if s.db == nil {
+		return dto.UserInfoResponse{}, ErrDatabaseDisabled
+	}
+
+	nickname = strings.TrimSpace(nickname)
+	if nickname == "" {
+		return dto.UserInfoResponse{}, ErrInvalidParam
+	}
+
+	var user model.User
+	if err := s.db.WithContext(ctx).Where("id = ?", userID).First(&user).Error; err != nil {
+		return dto.UserInfoResponse{}, err
+	}
+	if err := s.db.WithContext(ctx).Model(&user).Update("nickname", nickname).Error; err != nil {
+		return dto.UserInfoResponse{}, err
+	}
+	return dto.UserInfoResponse{Nickname: nickname, UserType: user.UserType, Email: decryptEmail(user.Email)}, nil
+}
+
 func (s *UserService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequest) error {
 	if s.db == nil {
 		return ErrDatabaseDisabled

@@ -20,6 +20,11 @@ type ResetPasswordRequest struct {
 	Password   string `json:"password" binding:"required"`
 }
 
+// UpdateNicknameRequest 修改昵称；昵称可重复，校验规则与注册保持一致。
+type UpdateNicknameRequest struct {
+	Nickname string `json:"nickname" binding:"required,min=3,max=20"`
+}
+
 type EmailVerificationRequest struct {
 	Email   string `json:"email" binding:"required,email"`
 	Purpose string `json:"purpose"`
