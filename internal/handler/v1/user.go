@@ -38,16 +38,8 @@ func (h *UserHandler) Register(c *gin.Context) {
 		CaptchaCode: input.CaptchaCode, UserType: input.UserType,
 	})
 	if err != nil {
-		switch {
-		case errors.Is(err, service.ErrInvalidParam):
-			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
-		case errors.Is(err, service.ErrEmailExists):
-			response.Error(c, apperror.New(apperror.CodeConflict, "资源已存在"))
-		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
-			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
-		default:
-			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
-		}
+		// 注册链路的 sentinel 自带 code 与文案（参数无效/验证码错误/邮箱已存在/依赖服务不可用），直接透传。
+		response.Error(c, err)
 		return
 	}
 	response.Created(c, dtoV1.RegisterResponse{Nickname: result.Nickname, Email: result.Email})

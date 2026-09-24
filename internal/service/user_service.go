@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"strings"
 
+	"onepractice-golang/internal/common/apperror"
 	"onepractice-golang/internal/dto"
 	"onepractice-golang/internal/model"
 	"onepractice-golang/internal/utils"
@@ -15,12 +15,12 @@ import (
 )
 
 var (
-	ErrInvalidParam        = errors.New("参数无效")
-	ErrCaptchaInvalid      = errors.New("验证码错误")
-	ErrEmailSendWait       = errors.New("邮箱已经发送 稍后再试")
-	ErrEmailExists         = errors.New("邮箱已存在")
-	ErrPasswordOrUserError = errors.New("密码错误或用户不存在")
-	ErrTokenInvalid        = errors.New("Token失效")
+	ErrInvalidParam        = apperror.New(apperror.CodeInvalidArgument, "参数无效")
+	ErrCaptchaInvalid      = apperror.New(apperror.CodeInvalidArgument, "验证码错误")
+	ErrEmailSendWait       = apperror.New(apperror.CodeConflict, "邮箱验证码已发送，请稍后再试")
+	ErrEmailExists         = apperror.New(apperror.CodeConflict, "邮箱已存在")
+	ErrPasswordOrUserError = apperror.New(apperror.CodeUnauthorized, "用户名或密码错误")
+	ErrTokenInvalid        = apperror.New(apperror.CodeUnauthorized, "Token失效")
 )
 
 type UserService struct {

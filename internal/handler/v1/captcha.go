@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"errors"
-
 	"onepractice-golang/internal/common/apperror"
 	"onepractice-golang/internal/common/response"
 	dtoV1 "onepractice-golang/internal/dto/v1"
@@ -33,18 +31,7 @@ func (h *CaptchaHandler) SendEmail(c *gin.Context) {
 		return
 	}
 	if err := h.service.SendEmailCaptcha(c.Request.Context(), req.Email, req.Purpose); err != nil {
-		switch {
-		case errors.Is(err, service.ErrInvalidParam):
-			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
-		case errors.Is(err, service.ErrEmailExists):
-			response.Error(c, apperror.New(apperror.CodeConflict, "资源已存在"))
-		case errors.Is(err, service.ErrRedisDisabled):
-			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
-		case errors.Is(err, service.ErrEmailSendWait):
-			response.Error(c, apperror.New(apperror.CodeConflict, "请稍后重试"))
-		default:
-			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
-		}
+		response.Error(c, err)
 		return
 	}
 	response.Success(c, nil)
@@ -67,16 +54,7 @@ func (h *CaptchaHandler) VerifyEmail(c *gin.Context) {
 	}
 	token, err := h.service.VerifyResetPassword(c.Request.Context(), req.Email, req.Code)
 	if err != nil {
-		switch {
-		case errors.Is(err, service.ErrInvalidParam):
-			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "参数无效"))
-		case errors.Is(err, service.ErrCaptchaInvalid):
-			response.Error(c, apperror.New(apperror.CodeInvalidArgument, "验证码错误"))
-		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
-			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
-		default:
-			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
-		}
+		response.Error(c, err)
 		return
 	}
 	response.Success(c, dtoV1.ResetTokenResponse{ResetToken: token})
