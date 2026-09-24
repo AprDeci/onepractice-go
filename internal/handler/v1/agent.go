@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"errors"
 	"io"
 	"path/filepath"
 	"strings"
@@ -70,18 +69,11 @@ func (h *AgentHandler) OCR(c *gin.Context) {
 	if h.points != nil {
 		cost, err := h.points.CostOf(c.Request.Context(), service.PointActionOCR)
 		if err != nil {
-			response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+			response.Error(c, err)
 			return
 		}
 		if err := h.points.Deduct(c.Request.Context(), userID, cost, service.PointTypeOCRSpend, requestID, "OCR识别"); err != nil {
-			switch {
-			case errors.Is(err, service.ErrInsufficientPoints):
-				response.Error(c, apperror.New(apperror.CodeInsufficientPoints, "积分不足"))
-			case errors.Is(err, service.ErrDatabaseDisabled):
-				response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
-			default:
-				response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
-			}
+			response.Error(c, err)
 			return
 		}
 	}

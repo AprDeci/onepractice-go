@@ -1,13 +1,18 @@
 package router_test
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"log/slog"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"sync"
 	"testing"
 
+	"onepractice-golang/internal/common/apperror"
+	"onepractice-golang/internal/common/response"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/router"
 
@@ -180,5 +185,60 @@ func TestHealthHasNoDeprecationHeader(t *testing.T) {
 	w := doRequest(t, r, http.MethodGet, "/health")
 	if got := w.Header().Get("Deprecation"); got != "" {
 		t.Errorf("/health must not carry Deprecation header, got %q", got)
+	}
+}
+
+// 依赖不可用（nil DB / nil Redis）必须暴露成 503「依赖服务不可用」，
+// 不能被 handler 的 default 分支吞成 500「系统异常」。
+func TestDependencyUnavailableSurfacesAsServiceUnavailable(t *testing.T) {
+	r := newTestEngine(t)
+	token, err := sagin.Login(int64(1))
+	if err != nil {
+		t.Fatalf("login: %v", err)
+	}
+
+	t.Run("essayGetTaskRedisDisabled", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/essay/tasks/abc", nil)
+		req.Header.Set("satoken", token)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		requireServiceUnavailable(t, w)
+	})
+
+	t.Run("ocrCostOfDatabaseDisabled", func(t *testing.T) {
+		var body bytes.Buffer
+		mw := multipart.NewWriter(&body)
+		part, err := mw.CreateFormFile("image", "test.jpg")
+		if err != nil {
+			t.Fatalf("create form file: %v", err)
+		}
+		if _, err := part.Write([]byte("not-a-real-jpeg")); err != nil {
+			t.Fatalf("write form file: %v", err)
+		}
+		if err := mw.Close(); err != nil {
+			t.Fatalf("close multipart writer: %v", err)
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/ocr", &body)
+		req.Header.Set("Content-Type", mw.FormDataContentType())
+		req.Header.Set("satoken", token)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		requireServiceUnavailable(t, w)
+	})
+}
+
+func requireServiceUnavailable(t *testing.T, w *httptest.ResponseRecorder) {
+	t.Helper()
+	if w.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want 503 (body: %s)", w.Code, w.Body.String())
+	}
+	var body response.Body
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode body %q: %v", w.Body.String(), err)
+	}
+	if body.Code != apperror.CodeServiceUnavailable || body.Message != "依赖服务不可用" {
+		t.Fatalf("body = {code:%d message:%q}, want {code:%d message:%q}",
+			body.Code, body.Message, apperror.CodeServiceUnavailable, "依赖服务不可用")
 	}
 }

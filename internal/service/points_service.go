@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"onepractice-golang/internal/common/apperror"
 	"onepractice-golang/internal/config"
 	"onepractice-golang/internal/model"
 
@@ -35,7 +36,7 @@ const (
 const checkinKeyTTL = 48 * time.Hour
 
 // ErrInsufficientPoints 表示用户积分余额不足以完成扣费。
-var ErrInsufficientPoints = errors.New("积分不足")
+var ErrInsufficientPoints = apperror.New(apperror.CodeInsufficientPoints, "积分不足")
 
 // errUnknownPointAction 表示 CostOf 收到了不受支持的动作。
 var errUnknownPointAction = errors.New("unknown points action")

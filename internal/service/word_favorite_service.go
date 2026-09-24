@@ -4,13 +4,14 @@ import (
 	"errors"
 	"strings"
 
+	"onepractice-golang/internal/common/apperror"
 	"onepractice-golang/internal/dto"
 	"onepractice-golang/internal/model"
 
 	"gorm.io/gorm"
 )
 
-var ErrWordNotFound = errors.New("word not found")
+var ErrWordNotFound = apperror.New(apperror.CodeNotFound, "word not found")
 
 type WordFavoriteService struct {
 	db *gorm.DB

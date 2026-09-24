@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"errors"
-
 	"onepractice-golang/internal/agent"
 	"onepractice-golang/internal/common/apperror"
 	"onepractice-golang/internal/common/response"
@@ -54,14 +52,7 @@ func (h *EssayHandler) CreateTask(c *gin.Context) {
 		Type:    req.Type,
 	})
 	if err != nil {
-		switch {
-		case errors.Is(err, service.ErrInsufficientPoints):
-			response.Error(c, apperror.New(apperror.CodeInsufficientPoints, "积分不足"))
-		case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
-			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
-		default:
-			response.Error(c, apperror.New(apperror.CodeInternal, err.Error()))
-		}
+		response.Error(c, err)
 		return
 	}
 
@@ -85,11 +76,7 @@ func (h *EssayHandler) GetTask(c *gin.Context) {
 
 	task, err := h.service.GetTask(c.Request.Context(), userID, c.Param("taskId"))
 	if err != nil {
-		if errors.Is(err, service.ErrTaskNotFound) {
-			response.Error(c, apperror.New(apperror.CodeNotFound, "任务不存在"))
-			return
-		}
-		response.Error(c, apperror.New(apperror.CodeInternal, err.Error()))
+		response.Error(c, err)
 		return
 	}
 
@@ -119,11 +106,7 @@ func (h *EssayHandler) GetResultsByRecord(c *gin.Context) {
 
 	results, err := h.service.GetResultsByRecord(userID, recordID)
 	if err != nil {
-		if errors.Is(err, service.ErrDatabaseDisabled) {
-			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
-			return
-		}
-		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		response.Error(c, err)
 		return
 	}
 
@@ -153,11 +136,7 @@ func (h *EssayHandler) ListResults(c *gin.Context) {
 	q = q.Normalize()
 	results, total, err := h.service.ListStandaloneResults(userID, q.Page, q.PageSize)
 	if err != nil {
-		if errors.Is(err, service.ErrDatabaseDisabled) {
-			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
-			return
-		}
-		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		response.Error(c, err)
 		return
 	}
 	response.Success(c, newPage(results, total, q))
@@ -184,15 +163,7 @@ func (h *EssayHandler) GetResultByTask(c *gin.Context) {
 	}
 	result, err := h.service.GetResultByTask(userID, taskID)
 	if err != nil {
-		if errors.Is(err, service.ErrTaskNotFound) {
-			response.Error(c, apperror.New(apperror.CodeNotFound, "任务不存在"))
-			return
-		}
-		if errors.Is(err, service.ErrDatabaseDisabled) {
-			response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
-			return
-		}
-		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
+		response.Error(c, err)
 		return
 	}
 	response.Success(c, result)

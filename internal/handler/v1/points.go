@@ -1,9 +1,6 @@
 package v1
 
 import (
-	"errors"
-
-	"onepractice-golang/internal/common/apperror"
 	"onepractice-golang/internal/common/response"
 	dtoV1 "onepractice-golang/internal/dto/v1"
 	"onepractice-golang/internal/service"
@@ -18,17 +15,6 @@ type PointsHandler struct {
 
 func NewPointsHandler(s *service.PointsService) *PointsHandler {
 	return &PointsHandler{service: s}
-}
-
-func pointsError(c *gin.Context, err error) {
-	switch {
-	case errors.Is(err, service.ErrInsufficientPoints):
-		response.Error(c, apperror.New(apperror.CodeInsufficientPoints, "积分不足"))
-	case errors.Is(err, service.ErrDatabaseDisabled), errors.Is(err, service.ErrRedisDisabled):
-		response.Error(c, apperror.New(apperror.CodeServiceUnavailable, "依赖服务不可用"))
-	default:
-		response.Error(c, apperror.Wrap(apperror.CodeInternal, "系统异常", err))
-	}
 }
 
 // Balance 查询当前用户积分余额。
@@ -46,7 +32,7 @@ func (h *PointsHandler) Balance(c *gin.Context) {
 	}
 	balance, err := h.service.Balance(c.Request.Context(), userID)
 	if err != nil {
-		pointsError(c, err)
+		response.Error(c, err)
 		return
 	}
 	response.Success(c, dtoV1.PointsBalanceResponse{Balance: balance})
@@ -70,7 +56,7 @@ func (h *PointsHandler) ListTransactions(c *gin.Context) {
 	q := pageQuery(c)
 	rows, total, err := h.service.ListTransactions(c.Request.Context(), userID, q.Offset(), q.PageSize)
 	if err != nil {
-		pointsError(c, err)
+		response.Error(c, err)
 		return
 	}
 	items := make([]dtoV1.PointsTransactionItem, 0, len(rows))
@@ -104,7 +90,7 @@ func (h *PointsHandler) DailyCheckin(c *gin.Context) {
 	}
 	granted, balance, err := h.service.ClaimDailyLogin(c.Request.Context(), userID)
 	if err != nil {
-		pointsError(c, err)
+		response.Error(c, err)
 		return
 	}
 	response.Success(c, dtoV1.PointsGrantResponse{Granted: granted, Balance: balance})
@@ -125,7 +111,7 @@ func (h *PointsHandler) CheckinStatus(c *gin.Context) {
 	}
 	checkedIn, err := h.service.CheckinStatus(c.Request.Context(), userID)
 	if err != nil {
-		pointsError(c, err)
+		response.Error(c, err)
 		return
 	}
 	response.Success(c, dtoV1.CheckinStatusResponse{CheckedIn: checkedIn})
@@ -143,17 +129,17 @@ func (h *PointsHandler) Costs(c *gin.Context) {
 
 	ocrCost, err := h.service.CostOf(ctx, service.PointActionOCR)
 	if err != nil {
-		pointsError(c, err)
+		response.Error(c, err)
 		return
 	}
 	essayCost, err := h.service.CostOf(ctx, service.PointActionEssay)
 	if err != nil {
-		pointsError(c, err)
+		response.Error(c, err)
 		return
 	}
 	dailyReward, err := h.service.CostOf(ctx, service.PointActionDailyLogin)
 	if err != nil {
-		pointsError(c, err)
+		response.Error(c, err)
 		return
 	}
 
