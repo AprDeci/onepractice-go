@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"crypto/rand"
-	"fmt"
 	"math/big"
 	"strings"
 	"time"
@@ -22,6 +21,9 @@ const (
 	CaptchaPurposeResetPassword = "reset_password"
 
 	captchaCodeTTL = 5 * time.Minute
+
+	captchaAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	captchaCodeLen  = 6
 )
 
 type CaptchaService struct {
@@ -53,7 +55,7 @@ func (s *CaptchaService) SendEmailCaptcha(ctx context.Context, email, purpose st
 		return err
 	}
 
-	code, err := randomCode()
+	code, err := RandomCode()
 	if err != nil {
 		return err
 	}
@@ -208,12 +210,19 @@ func (s *CaptchaService) emailExists(ctx context.Context, email string) (bool, e
 	return count > 0, nil
 }
 
-func randomCode() (string, error) {
-	n, err := rand.Int(rand.Reader, big.NewInt(1000000))
-	if err != nil {
-		return "", err
+// RandomCode 从 captchaAlphabet 中均匀采样生成验证码。
+func RandomCode() (string, error) {
+	limit := big.NewInt(int64(len(captchaAlphabet)))
+	var sb strings.Builder
+	sb.Grow(captchaCodeLen)
+	for range captchaCodeLen {
+		n, err := rand.Int(rand.Reader, limit)
+		if err != nil {
+			return "", err
+		}
+		sb.WriteByte(captchaAlphabet[n.Int64()])
 	}
-	return fmt.Sprintf("%06d", n.Int64()), nil
+	return sb.String(), nil
 }
 
 func normalizeEmail(email string) string {
