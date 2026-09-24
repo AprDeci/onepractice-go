@@ -119,56 +119,6 @@ func TestV1ProtectedRoutesRequireAuth(t *testing.T) {
 	}
 }
 
-func TestLegacyRoutesRegisteredWithDeprecationHeaders(t *testing.T) {
-	r := newTestEngine(t)
-	cases := []struct {
-		method string
-		path   string
-	}{
-		{http.MethodPost, "/api/user/login"},
-		{http.MethodGet, "/api/paper/all"},
-		{http.MethodPost, "/api/paper/getPaperwithQuerys"},
-		{http.MethodGet, "/api/paper/types"},
-		{http.MethodGet, "/api/question/getById"},
-		{http.MethodGet, "/api/dictionary/words"},
-		{http.MethodGet, "/api/dictionary/words/1"},
-		{http.MethodGet, "/api/dictionary/books/1/words"},
-	}
-	for _, tc := range cases {
-		w := doRequest(t, r, tc.method, tc.path)
-		if w.Code == http.StatusNotFound {
-			t.Errorf("legacy %s %s: route not registered (404)", tc.method, tc.path)
-			continue
-		}
-		if got := w.Header().Get("Deprecation"); got != "true" {
-			t.Errorf("legacy %s %s: Deprecation=%q, want \"true\"", tc.method, tc.path, got)
-		}
-		if got := w.Header().Get("Sunset"); got == "" {
-			t.Errorf("legacy %s %s: missing Sunset header", tc.method, tc.path)
-		}
-	}
-}
-
-func TestLegacyProtectedRoutesRequireAuth(t *testing.T) {
-	r := newTestEngine(t)
-	cases := []struct {
-		method string
-		path   string
-	}{
-		{http.MethodGet, "/api/user/info"},
-		{http.MethodPost, "/api/record/save"},
-		{http.MethodGet, "/api/record/list"},
-		{http.MethodPost, "/api/word/favorites"},
-		{http.MethodGet, "/api/word/favorites"},
-	}
-	for _, tc := range cases {
-		w := doRequest(t, r, tc.method, tc.path)
-		if w.Code != http.StatusUnauthorized {
-			t.Errorf("%s %s: want 401, got %d", tc.method, tc.path, w.Code)
-		}
-	}
-}
-
 func TestV1RoutesHaveNoDeprecationHeaders(t *testing.T) {
 	r := newTestEngine(t)
 	for _, path := range []string{"/api/v1/paper-types", "/api/v1/dictionary/words"} {
@@ -194,11 +144,34 @@ func TestV1InvalidPathParameterReturns400(t *testing.T) {
 	}
 }
 
-func TestLegacyOCRRemoved(t *testing.T) {
+// /api 下的旧路由已全部移除，任何残留都会在 401/200 而不是 404 上暴露出来。
+func TestLegacyRoutesRemoved(t *testing.T) {
 	r := newTestEngine(t)
-	w := doRequest(t, r, http.MethodPost, "/api/ocr")
-	if w.Code != http.StatusNotFound {
-		t.Errorf("POST /api/ocr: want 404 (moved to /api/v1/ocr), got %d", w.Code)
+	cases := []struct {
+		method string
+		path   string
+	}{
+		{http.MethodPost, "/api/user/register"},
+		{http.MethodPost, "/api/user/login"},
+		{http.MethodPost, "/api/user/resetpassword"},
+		{http.MethodGet, "/api/captcha/email"},
+		{http.MethodPost, "/api/captcha/email/verify"},
+		{http.MethodGet, "/api/paper/all"},
+		{http.MethodPost, "/api/paper/getPaperwithQuerys"},
+		{http.MethodGet, "/api/paper/types"},
+		{http.MethodGet, "/api/question/getById"},
+		{http.MethodGet, "/api/dictionary/words"},
+		{http.MethodGet, "/api/dictionary/books/1/words"},
+		{http.MethodGet, "/api/user/info"},
+		{http.MethodPost, "/api/record/save"},
+		{http.MethodPost, "/api/word/favorites"},
+		{http.MethodPost, "/api/ocr"},
+	}
+	for _, tc := range cases {
+		w := doRequest(t, r, tc.method, tc.path)
+		if w.Code != http.StatusNotFound {
+			t.Errorf("%s %s: want 404 (legacy route removed), got %d", tc.method, tc.path, w.Code)
+		}
 	}
 }
 

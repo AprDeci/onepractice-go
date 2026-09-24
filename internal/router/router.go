@@ -62,7 +62,7 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	r.Use(middleware.RequestID(), middleware.AccessLog(logger), middleware.Recovery(logger))
 
 	deps := newDeps(cfg, database, redisClient, mailModule.Sender, essayService)
-	registerHealthRoutes(r, deps.LegacyHealth)
+	registerHealthRoutes(r, deps.Health)
 	registerDocsRoutes(r)
 	plugin := sagin.NewPlugin(sagin.GetManager())
 
@@ -83,15 +83,6 @@ func New(cfg config.Config, database *gorm.DB, redisClient *redis.Client, logger
 	registerEssayRoutes(v1Protected, deps.V1Essay)
 	registerAgentRoutes(v1Protected, deps.V1Agent)
 	registerPointsRoutes(v1Protected, deps.V1Points, deps.TurnstileVerifier)
-
-	legacy := r.Group("/api")
-	legacy.Use(middleware.TimeoutMiddleware(5 * time.Second))
-	legacy.Use(plugin.TokenInterceptor())
-	legacy.Use(middleware.Deprecated("Wed, 30 Sep 2026 00:00:00 GMT"))
-	registerLegacyPublicRoutes(legacy, deps)
-	legacyProtected := legacy.Group("")
-	legacyProtected.Use(middleware.Auth())
-	registerLegacyProtectedRoutes(legacyProtected, deps)
 
 	return r, deps.Points, cleanup, nil
 }

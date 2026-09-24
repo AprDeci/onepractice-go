@@ -16,24 +16,17 @@ import (
 )
 
 type Deps struct {
-	LegacyUser         *handler.UserHandler
-	LegacyCaptcha      *handler.CaptchaHandler
-	LegacyPaper        *handler.PaperHandler
-	LegacyQuestion     *handler.QuestionHandler
-	LegacyDictionary   *handler.DictionaryHandler
-	LegacyRecord       *handler.RecordHandler
-	LegacyWordFavorite *handler.WordFavoriteHandler
-	LegacyHealth       *handler.HealthHandler
-	V1User             *handlerv1.UserHandler
-	V1Captcha          *handlerv1.CaptchaHandler
-	V1Paper            *handlerv1.PaperHandler
-	V1Question         *handlerv1.QuestionHandler
-	V1Dictionary       *handlerv1.DictionaryHandler
-	V1Record           *handlerv1.RecordHandler
-	V1WordFavorite     *handlerv1.WordFavoriteHandler
-	V1Essay            *handlerv1.EssayHandler
-	V1Agent            *handlerv1.AgentHandler
-	V1Points           *handlerv1.PointsHandler
+	Health         *handler.HealthHandler
+	V1User         *handlerv1.UserHandler
+	V1Captcha      *handlerv1.CaptchaHandler
+	V1Paper        *handlerv1.PaperHandler
+	V1Question     *handlerv1.QuestionHandler
+	V1Dictionary   *handlerv1.DictionaryHandler
+	V1Record       *handlerv1.RecordHandler
+	V1WordFavorite *handlerv1.WordFavoriteHandler
+	V1Essay        *handlerv1.EssayHandler
+	V1Agent        *handlerv1.AgentHandler
+	V1Points       *handlerv1.PointsHandler
 
 	// TurnstileVerifier 供需要人机校验的路由按需挂载。
 	TurnstileVerifier *turnstile.Verifier
@@ -57,26 +50,19 @@ func newDeps(cfg config.Config, db *gorm.DB, redisClient *redis.Client, mailSend
 	turnstileVerifier := turnstile.NewVerifier(cfg.Turnstile.Enabled, cfg.Turnstile.SecretKey)
 
 	return Deps{
-		LegacyUser:         handler.NewUserHandler(userSvc),
-		LegacyCaptcha:      handler.NewCaptchaHandler(captchaSvc),
-		LegacyPaper:        handler.NewPaperHandler(paperSvc),
-		LegacyQuestion:     handler.NewQuestionHandler(questionSvc),
-		LegacyDictionary:   handler.NewDictionaryHandler(dictionarySvc),
-		LegacyRecord:       handler.NewRecordHandler(recordSvc),
-		LegacyWordFavorite: handler.NewWordFavoriteHandler(favoriteSvc),
-		LegacyHealth:       handler.NewHealthHandler(db),
-		V1User:             handlerv1.NewUserHandler(userSvc),
-		V1Captcha:          handlerv1.NewCaptchaHandler(captchaSvc),
-		V1Paper:            handlerv1.NewPaperHandler(paperSvc),
-		V1Question:         handlerv1.NewQuestionHandler(questionSvc),
-		V1Dictionary:       handlerv1.NewDictionaryHandler(dictionarySvc),
-		V1Record:           handlerv1.NewRecordHandler(recordSvc),
-		V1WordFavorite:     handlerv1.NewWordFavoriteHandler(favoriteSvc),
-		V1Essay:            handlerv1.NewEssayHandler(essayService),
-		V1Agent:            handlerv1.NewAgentHandler(llm.NewGlmClient(cfg.LLM.GlmKey), pointsSvc),
-		V1Points:           handlerv1.NewPointsHandler(pointsSvc),
-		TurnstileVerifier:  turnstileVerifier,
-		Points:             pointsSvc,
+		Health:            handler.NewHealthHandler(db),
+		V1User:            handlerv1.NewUserHandler(userSvc),
+		V1Captcha:         handlerv1.NewCaptchaHandler(captchaSvc),
+		V1Paper:           handlerv1.NewPaperHandler(paperSvc),
+		V1Question:        handlerv1.NewQuestionHandler(questionSvc),
+		V1Dictionary:      handlerv1.NewDictionaryHandler(dictionarySvc),
+		V1Record:          handlerv1.NewRecordHandler(recordSvc),
+		V1WordFavorite:    handlerv1.NewWordFavoriteHandler(favoriteSvc),
+		V1Essay:           handlerv1.NewEssayHandler(essayService),
+		V1Agent:           handlerv1.NewAgentHandler(llm.NewGlmClient(cfg.LLM.GlmKey), pointsSvc),
+		V1Points:          handlerv1.NewPointsHandler(pointsSvc),
+		TurnstileVerifier: turnstileVerifier,
+		Points:            pointsSvc,
 	}
 }
 
