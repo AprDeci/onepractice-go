@@ -55,28 +55,27 @@ func (s *PaperService) PageWithRating(query dto.PaperQueryRequest) (dto.PageResu
 		return dto.PageResult[dto.PaperWithRating]{}, ErrDatabaseDisabled
 	}
 
-	buildQuery := func() *gorm.DB {
-		return s.paperFilter(s.db.Table("papers p"), query).
-			Joins("left join paper_rate_mapping r on r.paperId = p.paper_id").
-			Joins("left join questions q on q.paper_id = p.paper_id").
-			Group("p.paper_id, p.paper_name, p.exam_year, p.exam_month, p.version, p.total_time, p.type, r.rating, r.number").
-			Having("count(q.question_id) > 0")
-	}
+	// 用 exists 代替 join questions + group by：避免“试卷 × 题目”中间结果与全量分组排序。
+	hasQuestions := "exists (select 1 from questions q where q.paper_id = p.paper_id)"
 
-	var totalRows []struct{ PaperID int }
-	if err := buildQuery().Select("p.paper_id").Scan(&totalRows).Error; err != nil {
+	var total int64
+	if err := s.paperFilter(s.db.Table("papers p"), query).Where(hasQuestions).Count(&total).Error; err != nil {
 		return dto.PageResult[dto.PaperWithRating]{}, err
 	}
 
 	var papers []dto.PaperWithRating
-	err := buildQuery().Select(`p.paper_id, p.paper_name, p.exam_year, p.exam_month, p.version, p.total_time, p.type,
-		count(q.question_id) as question_count, coalesce(r.rating, 0) as rating, coalesce(r.number, 0) as number`).
+	err := s.paperFilter(s.db.Table("papers p"), query).
+		Joins("left join paper_rate_mapping r on r.paperId = p.paper_id").
+		Where(hasQuestions).
+		Select(`p.paper_id, p.paper_name, p.exam_year, p.exam_month, p.version, p.total_time, p.type,
+			(select count(*) from questions q where q.paper_id = p.paper_id) as question_count,
+			coalesce(r.rating, 0) as rating, coalesce(r.number, 0) as number`).
 		Order("p.exam_year desc, p.exam_month desc, substring(p.type, 4, 1) desc").
 		Limit(query.Size).
 		Offset(offset(query.Page, query.Size)).
 		Scan(&papers).Error
 
-	return dto.PageResult[dto.PaperWithRating]{Total: int64(len(totalRows)), Data: papers}, err
+	return dto.PageResult[dto.PaperWithRating]{Total: total, Data: papers}, err
 }
 
 func (s *PaperService) ByType(paperType string) ([]model.Paper, error) {
